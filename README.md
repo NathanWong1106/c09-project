@@ -63,7 +63,7 @@ OURCode is a co-operative online code editor for groups of developers to code to
     - File changes should persist on the db
 - Implement suggestions and comment system
     - Comments should persist on db
-- Deployment using GCP`
+- Deployment using GCP
     - CI files for Github Actions
 - Implement Judge0 code submissions (Python execution only)
 
