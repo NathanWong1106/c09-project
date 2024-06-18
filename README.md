@@ -23,8 +23,6 @@ OURCode is a co-operative online code editor for groups of developers to code to
 - **The application must be accessible to the general public without extra steps. i.e. A person does not need to talk to your team to access the full application.**
     - The website will be publicly available from a GCP hosted URL
 - **The application must interact with at least one third-party API.**
-    - liveblocks Collaborative Whiteboard - We will use this API to render a whiteboard within the workspace
-        - Send server notifications upon a suggestion approval or rejection
     - we will use the Judge0 api to execute code 
 - **The application must use OAuth 2.0 (an authorization mechanism) for any purpose.**
     - Users will be able to sign in using the Google OAuth services
