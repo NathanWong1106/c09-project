@@ -8,11 +8,11 @@
 | Arwin Fong | arwin.fong@mail.utoronto.ca |
 
 ## Description
-OURCode is a co-operative online code editor for groups of developers to code together simultaneously. A user can create files and invite other users to connect and collaborate on the files. Users will also be able to create in-line code suggestions that collaborators can comment and vote on in addition to a workspace shared whiteboard for collaborative design. Users can execute Python code through Judge0 when they have a Python file opened.
+OURCode is a co-operative online code editor for groups of developers to code together simultaneously. A user can create files and invite other users to connect and collaborate on the files. Users will also be able to create in-line code suggestions that collaborators can comment and vote on. Users can execute Python code through Judge0 when they have a Python file opened and all users connected to the file will see the result upon execution.
 
 ## Required Elements
 - **The application must use a modern frontend framework such as Angular, or Vue 3**
-    - We will be using Next.js as our frontend framework
+    - We will be using Angular as our frontend framework
 - **The application must use Express as the core backend API**
     - We will use an express backend and a docker PostgreSQL db with Prisma ORM
 - **The application's API is RESTful where appropriate**
@@ -23,8 +23,6 @@ OURCode is a co-operative online code editor for groups of developers to code to
 - **The application must be accessible to the general public without extra steps. i.e. A person does not need to talk to your team to access the full application.**
     - The website will be publicly available from a GCP hosted URL
 - **The application must interact with at least one third-party API.**
-    - liveblocks Collaborative Whiteboard - We will use this API to render a whiteboard within the workspace
-        - Send server notifications upon a suggestion approval or rejection
     - we will use the Judge0 api to execute code 
 - **The application must use OAuth 2.0 (an authorization mechanism) for any purpose.**
     - Users will be able to sign in using the Google OAuth services
@@ -34,7 +32,6 @@ OURCode is a co-operative online code editor for groups of developers to code to
     - We will be using Judge0 webhooks to get the result of a code submission by a user
 - **A piece of the application is “real-time”, which means it can reflect other user changes without refreshing**
     - Users will be able to share a code editor when opening a file which will be updated with users’ changes in real time
-    - Users will be able to share a whiteboard (liveblock) that will be updated in real time
 
 ## Alpha Version Milestone
 - Implement login/logout
@@ -65,10 +62,9 @@ OURCode is a co-operative online code editor for groups of developers to code to
     - Comments should persist on db
 - Deployment using GCP
     - CI files for Github Actions
-- Implement Judge0 code submissions (Python execution only)
 
 ## Final Version Milestone
-- Implement whiteboard shared by users in a workspace
+- Implement Judge0 code submissions (Python execution only)
 - Implement fuzzy search for searching through a user’s workspace
 - Catch-all for bug-fixes and QOL improvements
 
