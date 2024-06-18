@@ -34,7 +34,6 @@ OURCode is a co-operative online code editor for groups of developers to code to
     - We will be using Judge0 webhooks to get the result of a code submission by a user
 - **A piece of the application is “real-time”, which means it can reflect other user changes without refreshing**
     - Users will be able to share a code editor when opening a file which will be updated with users’ changes in real time
-    - Users will be able to share a whiteboard (liveblock) that will be updated in real time
 
 ## Alpha Version Milestone
 - Implement login/logout
