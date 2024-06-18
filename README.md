@@ -8,7 +8,7 @@
 | Arwin Fong | arwin.fong@mail.utoronto.ca |
 
 ## Description
-OURCode is a co-operative online code editor for groups of developers to code together simultaneously. A user can create files and invite other users to connect and collaborate on the files. Users will also be able to create in-line code suggestions that collaborators can comment and vote on. Users can execute Python code through Judge0 when they have a Python file opened.
+OURCode is a co-operative online code editor for groups of developers to code together simultaneously. A user can create files and invite other users to connect and collaborate on the files. Users will also be able to create in-line code suggestions that collaborators can comment and vote on. Users can execute Python code through Judge0 when they have a Python file opened and all users connected to the file will see the result upon execution.
 
 ## Required Elements
 - **The application must use a modern frontend framework such as Angular, or Vue 3**
