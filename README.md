@@ -12,7 +12,7 @@ OURCode is a co-operative online code editor for groups of developers to code to
 
 ## Required Elements
 - **The application must use a modern frontend framework such as Angular, or Vue 3**
-    - We will be using Next.js as our frontend framework
+    - We will be using Angular as our frontend framework
 - **The application must use Express as the core backend API**
     - We will use an express backend and a docker PostgreSQL db with Prisma ORM
 - **The application's API is RESTful where appropriate**
