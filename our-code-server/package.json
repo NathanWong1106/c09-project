@@ -5,8 +5,8 @@
   "main": "app.ts",
   "scripts": {
     "start": "ts-node app.ts",
-    "start:migrate:dev": "prisma migrate dev && npm run dev",
-    "dev": "nodemon app.ts",
+    "dev:dbpush": "prisma db push",
+    "dev": "prisma generate && nodemon app.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",

@@ -8,8 +8,8 @@ To make development as easy as possible, all services can be started with `docke
 If you are developing, `docker compose watch` will probably make your life easier. This does the following:
 - Watches the `/our-code` folder for changes to client
 - Watches the `/our-code-server` folder for changes to server
-- It DOES NOT automatically do db migrations - for that please restart the containers and rerun `docker compose up` or `docker compose watch`
-  - You can also manually run the migration with `npx prisma migrate dev`
+- It DOES NOT automatically do db migrations
+  - I need to find a way to do this automatically on container restart later - for now, in the `/our-code-server` directory run `npm run dev:dbpush` to update your local dev db with your schema changes
 
 You can connect to the services at ports:
 - `4200` for Client
