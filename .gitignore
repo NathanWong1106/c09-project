@@ -1,0 +1,4 @@
+# Ignore the mounted volume
+postgres-data/
+
+.env

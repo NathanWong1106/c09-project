@@ -1,0 +1,37 @@
+# This file is intended for development use only.
+# It is not suitable for production use.
+
+services:
+  client:
+    build: ./our-code
+    ports:
+      - 4200:4200
+    depends_on:
+      - server
+    develop:
+      watch:
+        - action: sync
+          path: ./our-code
+          target: /usr/src/app
+  server:
+    build: ./our-code-server
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+    develop:
+      watch:
+        - action: sync
+          path: ./our-code-server
+          target: /usr/src/server
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: ourcode_db
+      POSTGRES_USER: ourcode_user
+      POSTGRES_PASSWORD: ourcode_password
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
