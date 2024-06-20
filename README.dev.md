@@ -1,4 +1,8 @@
 ## Development With Docker
+
+> [!IMPORTANT]
+> FIRST: make sure you make a copy of `./our-code-server/.development.env` and rename to `.env` before developing.
+
 To make development as easy as possible, all services can be started with `docker compose up`.
 
 If you are developing, `docker compose watch` will probably make your life easier. This does the following:
