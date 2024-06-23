@@ -1,0 +1,17 @@
+<p-menubar>
+  <ng-template pTemplate="end">
+    <div class="flex align-items-center gap-2">
+      @if(isAuth) {
+      <p-avatar
+        class="user-avatar"
+        [image]="profilePicture"
+        (click)="menu.toggle($event)"
+        shape="circle"
+      />
+      <p-tieredMenu #menu [model]="menuItems" [popup]="true" />
+      } @else {
+      <p-button label="Sign in with Google" [rounded]="true" (click)="handleGoogleSignIn()" />
+      }
+    </div>
+  </ng-template>
+</p-menubar>

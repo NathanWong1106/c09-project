@@ -1,10 +1,4 @@
 <main>
-  @if (isAuth) {
-  <p-button label="Sign out" (onClick)="handleSignOut()" />
-  } @else {<p-button
-    label="Sign in with Google"
-    (onClick)="handleGoogleSignIn()"
-  />}
+  <app-header></app-header>
 </main>
-
 <router-outlet />
