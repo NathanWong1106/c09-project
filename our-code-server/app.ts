@@ -1,34 +1,24 @@
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
-
-import { PrismaClient } from "@prisma/client";
-const prisma = new PrismaClient();
+import authRouter from "./routers/auth.router";
+import session from "express-session";
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+  origin: process.env.CLIENT_URL || "http://localhost:4200",
+  credentials: true,
+}));
+app.use(session({
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: false,
+}));
 
 const PORT = process.env.PORT || 3000;
 
-app.get("/", (req, res) => {
-  res.json({ message: "Hello World" });
-});
-
-app.get("/users", async (req, res) => {
-  const users = await prisma.user.findMany();
-  res.json(users);
-});
-
-app.post("/users", async (req, res) => {
-  const { email } = req.body;
-  const user = await prisma.user.create({
-    data: {
-      email,
-    },
-  });
-  res.json(user);
-});
+app.use("/auth", authRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

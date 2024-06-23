@@ -1,11 +1,4 @@
 <main>
-  @if(exampleMessage | async; as message) {
-    <p>{{ message.message }}</p>
-  } 
-  @else {
-    <p>Loading...</p>
-  }
-  <p-button label="Click Me!" />
+  <app-header></app-header>
 </main>
-
 <router-outlet />
