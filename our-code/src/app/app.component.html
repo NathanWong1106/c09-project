@@ -1,11 +1,10 @@
 <main>
-  @if(exampleMessage | async; as message) {
-    <p>{{ message.message }}</p>
-  } 
-  @else {
-    <p>Loading...</p>
-  }
-  <p-button label="Click Me!" />
+  @if (isAuth) {
+  <p-button label="Sign out" (onClick)="handleSignOut()" />
+  } @else {<p-button
+    label="Sign in with Google"
+    (onClick)="handleGoogleSignIn()"
+  />}
 </main>
 
 <router-outlet />

@@ -1,5 +1,12 @@
 export default interface UserSession {
   id: number;
   email: string;
-  accessToken: string;
+  name: string;
+  picture: string;
+}
+
+declare module 'express-session' {
+  interface SessionData {
+    user: UserSession;
+  }
 }

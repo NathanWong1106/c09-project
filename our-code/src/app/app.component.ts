@@ -1,8 +1,9 @@
 import { Component, OnInit } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 import { ButtonModule } from 'primeng/button';
-import { ExampleMessage, ExampleService } from './shared/services/example.service';
 import { CommonModule } from '@angular/common';
+import { AuthService } from './shared/services/auth/auth.service';
+import { environment } from '../environments/environment';
 
 @Component({
   selector: 'app-root',
@@ -12,11 +13,49 @@ import { CommonModule } from '@angular/common';
   styleUrl: './app.component.css',
 })
 export class AppComponent implements OnInit {
-  exampleMessage!: Promise<ExampleMessage>;
+  isAuth: boolean = false;
+  client: any;
 
-  constructor(private exampleService: ExampleService) {}
+  constructor(private authService: AuthService) {}
 
   ngOnInit(): void {
-    this.exampleMessage = this.exampleService.getExampleText();
+    this.setAuthStatus();
+    this.initGoogleClient();
+  }
+
+  initGoogleClient() {
+    // @ts-ignore
+    this.client = google.accounts.oauth2.initTokenClient({
+      client_id: environment.googleClientId,
+      scope: 'email profile',
+      ux_mode: 'popup',
+      callback: (response: any) => {
+        this.authService.login(response.access_token).subscribe((data) => {
+          this.setAuthStatus();
+        });
+      }
+    });
+  }
+
+  handleGoogleSignIn() {
+    this.client.requestAccessToken();
+  }
+
+  handleSignOut() {
+    this.authService.logout().subscribe((data) => {
+      this.setAuthStatus();
+    });
+  }
+
+  setAuthStatus() {
+    this.authService.me().subscribe({
+      next: (data) => {
+        console.log(data);
+        this.isAuth = true;
+      },
+      error: (err) => { 
+        this.isAuth = false;
+      }
+    })
   }
 }

@@ -1,22 +1,20 @@
 import express from "express";
 import cors from "cors";
 import "dotenv/config";
-import session from "express-session";
-import passport from "passport";
 import authRouter from "./routers/auth.router";
+import session from "express-session";
 
 const app = express();
 app.use(express.json());
-app.use(cors());
-app.use(
-  session({
-    secret: "todo: change this secret",
-    resave: false,
-    saveUninitialized: false,
-  })
-);
-app.use(passport.initialize());
-app.use(passport.session());
+app.use(cors({
+  origin: process.env.CLIENT_URL || "http://localhost:4200",
+  credentials: true,
+}));
+app.use(session({
+  secret: 'keyboard cat',
+  resave: false,
+  saveUninitialized: false,
+}));
 
 const PORT = process.env.PORT || 3000;
 
