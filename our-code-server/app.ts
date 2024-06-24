@@ -21,8 +21,8 @@ app.use(session({
 const PORT = process.env.PORT || 3000;
 
 app.use("/auth", authRouter);
-app.use("/api/workspaces", workspaceRouter);
-app.use("/api/sharedworkspaces", sharedWorkspaceRouter);
+app.use("/api/workspace", workspaceRouter);
+app.use("/api/sharedworkspace", sharedWorkspaceRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

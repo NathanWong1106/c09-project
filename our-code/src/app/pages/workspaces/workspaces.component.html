@@ -4,7 +4,6 @@
   [scrollable]="true" 
   [rows]="10"
   [paginator]="true"
-  [rowsPerPageOptions]="[5, 10, 20]"
   [tableStyle]="{ 'min-width': '50rem'}">
   <ng-template pTemplate="caption">
     <div class="flex justify-between align-items-center">
@@ -12,8 +11,24 @@
       <p-button
         label="Create Workspace"
         icon="pi pi-plus"
-        (click)="createWorkspace()"
+        (click)="showDialog()"
         [style]="{ 'margin-right': '.5em'}"/>
+      <p-dialog
+        header="Create Workspace"
+        [(visible)]="visible"
+        [modal]="true"
+        [style]="{ 'width': '50vw'}">
+        <div class="flex align-items-center gap-3 mb-5">
+          <label for="name">Name</label>
+          <input pInputText id="name" class="flex-auto" [(ngModel)]="workspaceName" autocomplete="off"/>
+        </div>
+        <div>
+          <p-button
+            label="Create"
+            (click)="createWorkspace(workspaceName)"
+            [style]="{ 'margin-right': '.5em'}"/>
+        </div>
+      </p-dialog>
     </div>
   </ng-template>
   <ng-template pTemplate="header">

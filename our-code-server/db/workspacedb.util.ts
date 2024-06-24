@@ -1,6 +1,6 @@
 import db from "./dbConn";
 
-export const createWorkspace = async (name: string, userId: number) => {
+export const createWorkspace = async (userId: number, name: string) => {
   const workspace = await db.workspace.create({
     data: {
     name,
@@ -10,6 +10,9 @@ export const createWorkspace = async (name: string, userId: number) => {
           },
       },
     },
+    include: {
+      user: true,
+    }
   });
   
   return workspace;
@@ -22,6 +25,9 @@ export const getMyWorkspaces = async (userId: number, page: number) => {
     },
     skip: page * 10,
     take: 10,
+    include: {
+      user: true,
+    },
   });
 
   return workspaces;

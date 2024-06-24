@@ -3,6 +3,9 @@ import { TreeTableModule } from 'primeng/treetable';
 import { CommonModule } from '@angular/common';
 import { ButtonModule } from 'primeng/button';
 import { DialogModule } from 'primeng/dialog';
+import { FormsModule } from '@angular/forms';
+import { WorkspaceService } from '../../shared/services/workspace/workspace.service';
+import { InputTextModule } from 'primeng/inputtext';
 
 @Component({
   selector: 'app-workspaces',
@@ -11,51 +14,78 @@ import { DialogModule } from 'primeng/dialog';
     TreeTableModule,
     ButtonModule,
     CommonModule,
-    DialogModule
+    DialogModule,
+    InputTextModule,
+    FormsModule
   ],
   templateUrl: './workspaces.component.html',
   styleUrl: './workspaces.component.css'
 })
 export class WorkspacesComponent implements OnInit {
+  visible: boolean = false;
   workspaces: any[] = [];
+  workspaceName: string = '';
   cols: any[] = [
     { field: 'name', header: 'Name' },
+    { field: 'owner', header: 'Owner' },
     { field: 'actions', header: '' }
   ];
 
-  constructor() { }
+  constructor(private workspaceService: WorkspaceService) { }
 
   ngOnInit(): void {
-    this.workspaces = [
-      {
-        data: { name: 'Workspace 1' },
-        children: [
-          { data: { name: 'Sub Workspace 1.1' } },
-          { data: { name: 'Sub Workspace 1.2' } }
-        ]
-      },
-      {
-        data: { name: 'Workspace 2' },
-        children: [
-          { data: { name: 'Sub Workspace 2.1' } }
-        ]
-      },
-      {
-        data: { name: 'Workspace 3' }
-      }
-    ];
+    this.initWorkspaces();
   }
+
+  showDialog() {
+    this.visible = true;
+  }
+
+  initWorkspaces() {
+    this.workspaceService.getMyWorkspaces(0).subscribe({
+      next: (workspaces) => {
+        for (const workspace of workspaces) {
+          this.workspaces = [...this.workspaces, { data: { name: workspace.name, owner: workspace.user.email, id: workspace.id } }];
+        }
+      },
+      error: (error) => {
+        console.error(error);
+      }
+    });
+  }    
 
   editWorkspace(workspace: any) {
     console.log('Editing workspace', workspace);
   }
 
   deleteWorkspace(workspace: any) {
-    console.log('Deleting workspace', workspace);
+    this.workspaceService.deleteWorkspace(workspace.id).subscribe({
+      next: (response) => {
+        this.workspaces = this.workspaces.filter((w) => w.data.id !== workspace.id);
+      },
+      error: (error) => {
+        console.error(error);
+      }
+    });
   }
 
-  createWorkspace() {
-    console.log('Creating workspace');
+  createWorkspace(name: string) {
+    this.workspaceService.createWorkspace(name).subscribe({
+      next: (response) => {
+        this.workspaces = [...this.workspaces, 
+          { data: 
+            { name: 
+              response.workspace.name, 
+              owner: response.workspace.user.email, 
+              id: response.workspace.id 
+            } 
+          }];
+      },
+      error: (error) => {
+        console.error(error);
+      }
+    });
+    this.visible = false;
   }
 
   shareWorkspace(workspace: any) {

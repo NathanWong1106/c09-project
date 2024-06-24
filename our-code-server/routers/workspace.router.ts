@@ -5,10 +5,8 @@ import { isAuthenticated } from "../middleware/auth.middleware";
 const workspaceRouter = Router();
 
 workspaceRouter.get("/", isAuthenticated, (req, res) => {
-
   const page = req.query.page ? parseInt(req.query.page as string) : 0;
   const userId = req.session.user!.id;
-
   getMyWorkspaces(userId, page)
     .then((workspaces) => {
       return res.status(200).json({ workspaces });
@@ -21,8 +19,7 @@ workspaceRouter.get("/", isAuthenticated, (req, res) => {
 workspaceRouter.post("/", isAuthenticated, (req, res) => {
   const name = req.body.name;
   const userId = req.session.user!.id;
-
-  createWorkspace(name, userId)
+  createWorkspace(userId, name)
     .then((workspace) => {
       return res.status(200).json({ workspace });
     })
