@@ -1,4 +1,25 @@
 <p-menubar>
+  <ng-template pTemplate="start">
+    @if(isAuth) {
+      <p-button
+        label="My Workspaces"
+        icon="pi pi-home"
+        [routerLink]="['/workspaces']"
+        [routerLinkActiveOptions]="{ exact: true }"
+        [routerLinkActive]="['router-link-active']"
+        [style]="{ marginRight: '0.5rem' }"
+      />
+
+      <p-button
+        label="Shared Workspaces"
+        icon="pi pi-users"
+        [routerLink]="['/sharedworkspaces']"
+        [routerLinkActiveOptions]="{ exact: true }"
+        [routerLinkActive]="['router-link-active']"
+        [style]="{ marginRight: '0.5rem' }"
+      />
+    }
+  </ng-template>
   <ng-template pTemplate="end">
     <div class="flex align-items-center gap-2">
       @if(isAuth) {

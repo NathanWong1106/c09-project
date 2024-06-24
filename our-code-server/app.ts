@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config";
 import authRouter from "./routers/auth.router";
+import workspaceRouter from "./routers/workspace.router";
+import sharedWorkspaceRouter from "./routers/sharedworkspace.router";
 import session from "express-session";
 
 const app = express();
@@ -19,6 +21,8 @@ app.use(session({
 const PORT = process.env.PORT || 3000;
 
 app.use("/auth", authRouter);
+app.use("/api/workspaces", workspaceRouter);
+app.use("/api/sharedworkspaces", sharedWorkspaceRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

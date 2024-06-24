@@ -1,1 +1,53 @@
-<p>workspaces works!</p>
+<p-treeTable 
+  [value]="workspaces" 
+  [columns]="cols" 
+  [scrollable]="true" 
+  [rows]="10"
+  [paginator]="true"
+  [rowsPerPageOptions]="[5, 10, 20]"
+  [tableStyle]="{ 'min-width': '50rem'}">
+  <ng-template pTemplate="caption">
+    <div class="flex justify-between align-items-center">
+      <h2>My Workspaces</h2>
+      <p-button
+        label="Create Workspace"
+        icon="pi pi-plus"
+        (click)="createWorkspace()"
+        [style]="{ 'margin-right': '.5em'}"/>
+    </div>
+  </ng-template>
+  <ng-template pTemplate="header">
+    <tr>
+      <th *ngFor="let col of cols">
+        {{ col.header }}
+      </th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-rowNode let-rowData="rowData">
+    <tr [ttRow]="rowNode">
+      <td *ngFor="let col of cols; let i = index; let last = last">
+        <p-treeTableToggler [rowNode]="rowNode" *ngIf="i === 0"></p-treeTableToggler>
+        <span>{{ rowData[col.field] }}</span>
+        <ng-container *ngIf="last">
+          <p-button
+            icon="pi pi-pencil"
+            class="p-button-rounded p-button-text"
+            (click)="editWorkspace(rowData)"
+            [style]="{ 'margin-right': '.5em'}"/>
+            
+          <p-button
+            icon="pi pi-share-alt"
+            class="p-button-rounded p-button-text"
+            (click)="shareWorkspace(rowData)"
+            [style]="{ 'margin-right': '.5em'}"/>
+
+          <p-button
+            icon="pi pi-trash"
+            class="p-button-rounded p-button-text"
+            (click)="deleteWorkspace(rowData)"
+            [style]="{ 'margin-right': '.5em'}"/>
+        </ng-container>
+      </td>
+    </tr> 
+  </ng-template>
+</p-treeTable>
