@@ -34,12 +34,21 @@ export class WorkspaceService {
       })
     );
   }
+
   public createWorkspace(name: string) {
     return this.authService.user$.pipe(
       switchMap((user) => {
         return this.http.post<Workspace>(`${this.endpoint}/api/workspace`, { name, owner: user?.id }, { withCredentials: true });
       })
     );
+  }
+
+  public findWorkspaceByName(name: string) {
+    return this.http.get<Workspace>(`${this.endpoint}/api/workspace/search?name=${name}`, { withCredentials: true });
+  }
+
+  public editWorkspace(workspaceId: number, name: string) {
+    return this.http.patch(`${this.endpoint}/api/workspace/edit/${workspaceId}`, { name }, { withCredentials: true });
   }
 
   public deleteWorkspace(id: number) {

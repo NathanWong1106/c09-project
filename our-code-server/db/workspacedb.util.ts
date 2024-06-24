@@ -40,3 +40,32 @@ export const deleteWorkspace = async (workspaceId: number) => {
     },
   });
 };
+
+export const findWorkspaceByName = async (name: string) => {
+  const workspace = await db.workspace.findMany({
+    where: {
+      name,
+    },
+    include: {
+      user: true,
+    },
+  });
+
+  return workspace;
+}
+
+export const editWorkspace = async (workspaceId: number, name: string) => {
+  const workspace = await db.workspace.update({
+    where: {
+      id: workspaceId,
+    },
+    data: {
+      name,
+    },
+    include: {
+      user: true,
+    },
+  });
+
+  return workspace;
+}

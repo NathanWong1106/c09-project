@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getMyWorkspaces, createWorkspace, deleteWorkspace } from "../db/workspacedb.util";
+import { getMyWorkspaces, createWorkspace, deleteWorkspace, findWorkspaceByName, editWorkspace } from "../db/workspacedb.util";
 import { isAuthenticated } from "../middleware/auth.middleware";
 
 const workspaceRouter = Router();
@@ -37,6 +37,38 @@ workspaceRouter.delete("/:id", isAuthenticated, (req, res) => {
     })
     .catch((err) => {
       return res.status(500).json({ error: "Failed to delete workspace" });
+    });
+});
+
+workspaceRouter.get("/search", isAuthenticated, (req, res) => {
+  const name = req.query.name as string; // Assuming name is a string
+  if (!name) {
+    return res.status(400).json({ error: "Workspace name is required" });
+  }
+
+  findWorkspaceByName(name)
+    .then((workspace) => {
+      if (workspace) {
+        return res.status(200).json({ workspace });
+      } else {
+        return res.status(404).json({ message: "Workspace not found" });
+      }
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: "Failed to find workspace" });
+    });
+});
+
+workspaceRouter.patch("/edit/:id", isAuthenticated, (req, res) => {
+  const workspaceId = parseInt(req.params.id);
+  const name = req.body.name;
+
+  editWorkspace(workspaceId, name)
+    .then((workspace) => {
+      return res.status(200).json({ workspace });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: "Failed to edit workspace" });
     });
 });
 

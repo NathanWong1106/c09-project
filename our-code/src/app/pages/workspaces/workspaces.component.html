@@ -6,30 +6,40 @@
   [paginator]="true"
   [tableStyle]="{ 'min-width': '50rem'}">
   <ng-template pTemplate="caption">
-    <div class="flex justify-between align-items-center">
-      <h2>My Workspaces</h2>
-      <p-button
-        label="Create Workspace"
-        icon="pi pi-plus"
-        (click)="showDialog()"
-        [style]="{ 'margin-right': '.5em'}"/>
-      <p-dialog
-        header="Create Workspace"
-        [(visible)]="visible"
-        [modal]="true"
-        [style]="{ 'width': '50vw'}">
-        <div class="flex align-items-center gap-3 mb-5">
-          <label for="name">Name</label>
-          <input pInputText id="name" class="flex-auto" [(ngModel)]="workspaceName" autocomplete="off"/>
-        </div>
-        <div>
+    <p-menubar class="no-border">
+      <ng-template pTemplate="start">
+        <h2>My Workspaces</h2>
+      </ng-template>
+      <ng-template pTemplate="end">
+        <div class="flex">
+          <div class="p-input-icon-left" [style]="{ 'margin-right': '1em'}">
+            <i class="pi pi-search"></i>
+            <input type="text" pInputText placeholder="Search Workspaces..." [(ngModel)]="searchTerm" (input)="findWorkspace(searchTerm)" />
+          </div>
           <p-button
-            label="Create"
-            (click)="createWorkspace(workspaceName)"
-            [style]="{ 'margin-right': '.5em'}"/>
+          label="Create Workspace"
+          icon="pi pi-plus"
+          (click)="showDialogCreate()"
+          [style]="{ 'margin-right': '.5em'}"/>
+          <p-dialog
+            header="Create a Workspace"
+            [(visible)]="visibleCreate"
+            [modal]="true"
+            [style]="{ 'width': '50vw'}">
+            <div class="flex align-items-center gap-3 mb-5">
+              <label for="name" [style]="{ 'margin-right': '1em'}">Name</label>
+              <input pInputText id="name" class="flex-auto" [(ngModel)]="workspaceName" autocomplete="off"/>
+            </div>
+            <ng-template pTemplate="footer">
+              <p-button
+                label="Create"
+                (click)="createWorkspace(workspaceName)"
+                [style]="{ 'margin-right': '.5em'}"/>
+            </ng-template>
+          </p-dialog>
         </div>
-      </p-dialog>
-    </div>
+      </ng-template>
+    </p-menubar>
   </ng-template>
   <ng-template pTemplate="header">
     <tr>
@@ -47,19 +57,33 @@
           <p-button
             icon="pi pi-pencil"
             class="p-button-rounded p-button-text"
-            (click)="editWorkspace(rowData)"
+            (click)="showDialogEdit(rowData)"
             [style]="{ 'margin-right': '.5em'}"/>
-            
+          <p-dialog
+            header="Edit Workspace Name" 
+            [(visible)]="visibleEdit"
+            [modal]="true"
+            [style]="{ 'width': '50vw'}">
+            <div class="flex align-items-center gap-3 mb-5">
+              <label for="name" [style]="{ 'margin-right': '1em'}">Name</label>
+              <input pInputText id="name" class="flex-auto" [(ngModel)]="workspaceName" autocomplete="off"/>
+            </div>
+            <ng-template pTemplate="footer">
+              <p-button
+                label="Edit"
+                (click)="editWorkspace(currentRowData.id, workspaceName)"
+                [style]="{ 'margin-right': '.5em'}"/>
+            </ng-template>
+          </p-dialog>
           <p-button
             icon="pi pi-share-alt"
             class="p-button-rounded p-button-text"
             (click)="shareWorkspace(rowData)"
             [style]="{ 'margin-right': '.5em'}"/>
-
           <p-button
             icon="pi pi-trash"
             class="p-button-rounded p-button-text"
-            (click)="deleteWorkspace(rowData)"
+            (click)="deleteWorkspace(rowData.id)"
             [style]="{ 'margin-right': '.5em'}"/>
         </ng-container>
       </td>
