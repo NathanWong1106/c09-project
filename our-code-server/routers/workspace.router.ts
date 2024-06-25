@@ -41,7 +41,8 @@ workspaceRouter.delete("/:id", isAuthenticated, (req, res) => {
 });
 
 workspaceRouter.get("/search", isAuthenticated, (req, res) => {
-  const name = req.query.name as string; // Assuming name is a string
+  // add pagination
+  const name = req.query.name as string;
   if (!name) {
     return res.status(400).json({ error: "Workspace name is required" });
   }

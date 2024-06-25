@@ -57,7 +57,7 @@
           <p-button
             icon="pi pi-pencil"
             class="p-button-rounded p-button-text"
-            (click)="showDialogEdit(rowData)"
+            (click)="showDialogEdit(); saveRowData(rowData)"
             [style]="{ 'margin-right': '.5em'}"/>
           <p-dialog
             header="Edit Workspace Name" 
@@ -78,8 +78,26 @@
           <p-button
             icon="pi pi-share-alt"
             class="p-button-rounded p-button-text"
-            (click)="shareWorkspace(rowData)"
+            (click)="op.toggle($event); saveRowData(rowData)"
             [style]="{ 'margin-right': '.5em'}"/>
+              <p-overlayPanel #op>
+                <div class="flex">
+                  <span class="font-medium text-900 block mb-2">Share this workspace</span>
+                  <p-inputGroup>
+                    <input pInputText [value]="sampleurl" readonly class="w-25rem"/>
+                    <p-inputGroupAddon>
+                        <i class="pi pi-copy" (click)="copyShareUrl(sampleurl)"></i>
+                    </p-inputGroupAddon>
+                  </p-inputGroup>
+                </div>
+                <div>
+                  <span class="font-medium text-900 block mb-2">Invite Member</span>
+                  <div class="flex">
+                    <p-chips [(ngModel)]="members" [style]="{ 'margin-right': '.5em'}"/>
+                    <p-button label="Invite" icon="pi pi-users" (click)="shareMember(members, currentRowData)"/>
+                  </div>
+                </div>
+              </p-overlayPanel>
           <p-button
             icon="pi pi-trash"
             class="p-button-rounded p-button-text"
