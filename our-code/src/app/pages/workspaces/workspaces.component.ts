@@ -14,6 +14,10 @@ import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
 import { Clipboard } from '@angular/cdk/clipboard';
 import { ChipsModule } from 'primeng/chips';
 import { Workspace } from '../../shared/services/workspace/workspace.interface';
+import { MessageService } from 'primeng/api';
+import { MessagesModule } from 'primeng/messages';
+import { ToastModule } from 'primeng/toast';
+import { PaginatorModule } from 'primeng/paginator';
 
 @Component({
   selector: 'app-workspaces',
@@ -30,9 +34,12 @@ import { Workspace } from '../../shared/services/workspace/workspace.interface';
     InputGroupModule,
     InputGroupAddonModule,
     ChipsModule,
+    MessagesModule,
+    ToastModule,
+    PaginatorModule
   ],
   templateUrl: './workspaces.component.html',
-  styleUrl: './workspaces.component.css'
+  styleUrl: './workspaces.component.css',
 })
 export class WorkspacesComponent implements OnInit {
   visibleEdit: boolean = false;
@@ -50,7 +57,12 @@ export class WorkspacesComponent implements OnInit {
     { field: 'actions', header: '' }
   ];
 
-  constructor(private workspaceService: WorkspaceService, private clipboard: Clipboard, private sharedWorkspaceService: SharedWorkspaceService) { }
+  constructor(
+    private workspaceService: WorkspaceService, 
+    private clipboard: Clipboard, 
+    private messageService: MessageService,
+    private sharedWorkspaceService: SharedWorkspaceService, 
+  ) { }
 
   ngOnInit(): void {
     this.initWorkspaces();
@@ -58,30 +70,51 @@ export class WorkspacesComponent implements OnInit {
 
   copyShareUrl(sampleurl: string) {
     this.clipboard.copy(sampleurl);
+    this.messageService.add({severity:'success', summary:'Success', detail:'URL copied to clipboard'});
+    console.log(this.currentRowData)
   }
 
   saveRowData(rowData: Workspace) {
-    this.currentRowData = rowData;
+    this.sharedWorkspaceService.getSharedUsers(rowData.id).subscribe({
+      next: (response) => {
+        this.currentRowData = rowData;
+        this.currentRowData.sharedUsers = response.users
+      },
+      error: (error) => {
+        console.error(error);
+        this.messageService.add({severity:'error', summary:'Error', detail:'Failed to get shared users'});
+      }
+    });
   }
+
+  removeSharedMember(userId: number, workspaceId: number) {
+    this.sharedWorkspaceService.removeSharedUser(userId, workspaceId).subscribe({
+      next: (response) => {
+        this.currentRowData.sharedUsers = this.currentRowData.sharedUsers.filter((u: any) => u.id !== userId);
+        this.messageService.add({severity:'success', summary:'Success', detail:'Member successfully removed'});
+      },
+      error: (error) => {
+        console.error(error);
+        this.messageService.add({severity:'error', summary:'Error', detail:'Failed to remove member'});
+      }
+    });
+  };
 
   shareMember(members: string[], rowData: Workspace) {
     if (members.length === 0) {
-      // toast error
+      this.messageService.add({severity:'error', summary:'Error', detail:'Please enter a member'});
     }
     else if (members.includes(rowData.owner)) {
-      // toast error
-    }
-    else if (0) {
-      // member not found
-      // toast error
+      this.messageService.add({severity:'error', summary:'Error', detail:'Owner cannot be added as a member'});
     }
     else {
       this.sharedWorkspaceService.addSharedWorkspace(rowData.id, members).subscribe({
         next: (response) => {
-          // toast user(s) added
+          this.messageService.add({severity:'success', summary:'Success', detail:'Workspace successfully shared'});
         },
         error: (error) => {
           console.error(error);
+          this.messageService.add({severity:'error', summary:'Error', detail:'Failed to share workspace'});
         }
       });
       this.members = [];
@@ -97,16 +130,7 @@ export class WorkspacesComponent implements OnInit {
   }
 
   initWorkspaces() {
-    this.workspaceService.getMyWorkspaces(0).subscribe({
-      next: (workspaces) => {
-        for (const workspace of workspaces) {
-          this.workspaces = [...this.workspaces, { data: { name: workspace.name, owner: workspace.user.email, id: workspace.id } }];
-        }
-      },
-      error: (error) => {
-        console.error(error);
-      }
-    });
+    this.getWorkspaces(0);
   }    
 
   editWorkspace(id: number, name: string) {
@@ -119,9 +143,11 @@ export class WorkspacesComponent implements OnInit {
           this.workspaceName = '';
           return w;
         });
+        this.messageService.add({severity:'success', summary:'Success', detail:'Workspace name successfully edited'});
       },
       error: (error) => {
         console.error(error);
+        this.messageService.add({severity:'error', summary:'Error', detail:'Failed to edit workspace'});
       }
     });
     this.visibleEdit = false;
@@ -131,9 +157,11 @@ export class WorkspacesComponent implements OnInit {
     this.workspaceService.deleteWorkspace(id).subscribe({
       next: (response) => {
         this.workspaces = this.workspaces.filter((w) => w.data.id !== id);
+        this.messageService.add({severity:'success', summary:'Success', detail:'Workspace successfully deleted'});
       },
       error: (error) => {
         console.error(error);
+        this.messageService.add({severity:'error', summary:'Error', detail:'Failed to delete workspace'});
       }
     });
   }
@@ -142,12 +170,17 @@ export class WorkspacesComponent implements OnInit {
     this.workspaceService.getMyWorkspaces(page).subscribe({
       next: (workspaces) => {
         this.workspaces = [];
-        for (const workspace of workspaces) {
-          this.workspaces = [...this.workspaces, { data: { name: workspace.name, owner: workspace.user.email, id: workspace.id } }];
+        if (workspaces.length === 0) {
+          this.messageService.add({severity:'info', summary:'Info', detail:'No workspaces found'});
+        } else {
+          for (const workspace of workspaces) {
+            this.workspaces = [...this.workspaces, { data: { name: workspace.name, owner: workspace.user.email, id: workspace.id } }];
+          }
         }
       },
       error: (error) => {
         console.error(error);
+        this.messageService.add({severity:'error', summary:'Error', detail:'Failed to get workspaces'});
       }
     });
   }
@@ -164,9 +197,11 @@ export class WorkspacesComponent implements OnInit {
             } 
           }];
         this.workspaceName = '';
+        this.messageService.add({severity:'success', summary:'Success', detail:'Workspace successfully created'});
       },
       error: (error) => {
         console.error(error);
+        this.messageService.add({severity:'error', summary:'Error', detail:'Failed to create workspace'});
       }
     });
     this.visibleCreate = false;
@@ -179,10 +214,12 @@ export class WorkspacesComponent implements OnInit {
       this.workspaceService.findWorkspaceByName(name).subscribe({
         next: (response) => {
           this.workspaces = [];
-          if (response.workspace) {
+          if (response.workspace.length > 0) {
             for (const workspace of response.workspace) {
               this.workspaces = [...this.workspaces, { data: { name: workspace.name, owner: workspace.user.email, id: workspace.id } }];
             }
+          } else {
+            this.messageService.add({severity:'info', summary:'Info', detail:'Workspace not found'});
           }
         },
         error: (error) => {

@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addMultiToSharedWorkspace, removeSharedWorkspace, getSharedWorkspaces, findSharedWorkspaceByName } from "../db/sharedworkspacedb.util";
+import { addMultiToSharedWorkspace, removeSharedWorkspace, getSharedWorkspaces, findSharedWorkspaceByName, getSharedUsers } from "../db/sharedworkspacedb.util";
 import { isAuthenticated } from "../middleware/auth.middleware";
 
 const sharedWorkspaceRouter = Router();
@@ -13,6 +13,17 @@ sharedWorkspaceRouter.get("/", isAuthenticated, (req, res) => {
     })
     .catch((err) => {
       return res.status(500).json({ error: "Failed to get shared workspaces" });
+    });
+});
+
+sharedWorkspaceRouter.get("/users", isAuthenticated, (req, res) => {
+  const workspaceId = parseInt(req.query.workspaceId as string);
+  getSharedUsers(workspaceId)
+    .then((users) => {
+      return res.status(200).json({ users });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: "Failed to get shared users" });
     });
 });
 
@@ -50,9 +61,9 @@ sharedWorkspaceRouter.post("/add", isAuthenticated, async (req, res) => {
   }
 });
 
-sharedWorkspaceRouter.post("/remove", isAuthenticated, async (req, res) => {
-  const workspaceId = req.body.workspaceId;
-  const userId = req.session.user!.id;
+sharedWorkspaceRouter.delete("/remove", isAuthenticated, async (req, res) => {
+  const workspaceId = parseInt(req.query.workspaceId as string);
+  const userId = parseInt(req.query.userId as string);
 
   try {
     await removeSharedWorkspace(workspaceId, userId);

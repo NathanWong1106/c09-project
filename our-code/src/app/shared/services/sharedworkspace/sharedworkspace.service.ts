@@ -35,12 +35,16 @@ export class SharedWorkspaceService {
     );
   }
 
+  public getSharedUsers(workspaceId: number) {
+    return this.http.get<{ users: any[] }>(`${this.endpoint}/api/sharedworkspace/users?workspaceId=${workspaceId}`, { withCredentials: true });
+  }
+
   public addSharedWorkspace(workspaceId: number, members: string[]) {
     return this.http.post(`${this.endpoint}/api/sharedworkspace/add`, { workspaceId, members }, { withCredentials: true });
   };
 
-  public removeSharedWorkspace(workspaceId: number) {
-    return this.http.delete(`${this.endpoint}/api/sharedworkspace/${workspaceId}`, { withCredentials: true });
+  public removeSharedUser(userId: number, workspaceId: number) {
+    return this.http.delete(`${this.endpoint}/api/sharedworkspace/remove?userId=${userId}&workspaceId=${workspaceId}`, { withCredentials: true });
   }
 
   public findSharedWorkspaceByName(name: string) {

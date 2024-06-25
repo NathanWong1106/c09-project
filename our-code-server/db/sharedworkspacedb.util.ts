@@ -70,17 +70,31 @@ export const addMultiToSharedWorkspace = async (workspaceId: number, members: st
 
   await db.sharedWorkspace.createMany({
     data: sharedWorkspace,
+    skipDuplicates: true,
   });
 
   return userIds;
 };
 
+export const getSharedUsers = async (workspaceId: number) => {
+  const users = await db.sharedWorkspace.findMany({
+    where: {
+      workspaceId,
+    },
+    select: {
+      user: true,
+    },
+  });
+
+  return users;
+}
+
 export const removeSharedWorkspace = async (workspaceId: number, userId: number) => {
   await db.sharedWorkspace.delete({
     where: {
       userId_workspaceId: {
-        userId,
-        workspaceId,
+        userId: userId,
+        workspaceId: workspaceId,
       },
     },
   });

@@ -1,20 +1,21 @@
+<p-toast></p-toast>
 <p-treeTable 
-  [value]="workspaces" 
-  [columns]="cols" 
-  [scrollable]="true" 
-  [rows]="10"
-  [paginator]="true"
-  [tableStyle]="{ 'min-width': '50rem'}">
-  <ng-template pTemplate="caption">
-    <p-menubar class="no-border">
+[value]="workspaces" 
+[columns]="cols" 
+[scrollable]="true" 
+[rows]="10"
+[paginator]="true"
+[tableStyle]="{ 'min-width': '50rem'}">
+<ng-template pTemplate="caption">
+    <p-menubar>
       <ng-template pTemplate="start">
         <h2>My Workspaces</h2>
       </ng-template>
       <ng-template pTemplate="end">
-        <div class="flex">
+        <div class="flex" (keydown.enter)="findWorkspace(searchTerm)">
           <div class="p-input-icon-left" [style]="{ 'margin-right': '1em'}">
             <i class="pi pi-search"></i>
-            <input type="text" pInputText placeholder="Search Workspaces..." [(ngModel)]="searchTerm" (input)="findWorkspace(searchTerm)" />
+            <input type="text" pInputText placeholder="Search Workspaces..." [(ngModel)]="searchTerm" />
           </div>
           <p-button
           label="Create Workspace"
@@ -81,7 +82,7 @@
             (click)="op.toggle($event); saveRowData(rowData)"
             [style]="{ 'margin-right': '.5em'}"/>
               <p-overlayPanel #op>
-                <div class="flex">
+                <div class="flex flex-column gap-3 w-25rem">
                   <span class="font-medium text-900 block mb-2">Share this workspace</span>
                   <p-inputGroup>
                     <input pInputText [value]="sampleurl" readonly class="w-25rem"/>
@@ -94,13 +95,31 @@
                   <span class="font-medium text-900 block mb-2">Invite Member</span>
                   <div class="flex">
                     <p-chips [(ngModel)]="members" [style]="{ 'margin-right': '.5em'}"/>
-                    <p-button label="Invite" icon="pi pi-users" (click)="shareMember(members, currentRowData)"/>
+                    <p-button label="Invite" icon="pi pi-users" (click)="shareMember(members, currentRowData); op.toggle($event)"/>
                   </div>
+                </div>
+                <div>
+                  <span class="font-medium text-900 block mb-2">Shared Members</span>
+                  <ul class="list-none p-0 m-0 flex flex-column gap-3">
+                    <li>
+                      <div class="flex flex-column">
+                        <span class="font-medium">{{ currentRowData.owner }}</span>
+                        <span class="text-sm">Owner</span>
+                      </div>
+                    </li>
+                    <li *ngFor="let member of currentRowData.sharedUsers" class="flex justify-content-between gap-2">
+                      <div class="flex flex-column">
+                        <span class="font-medium">{{ member.user.email }}</span>
+                        <span class="text-sm">Editor</span>
+                      </div>
+                      <i class="pi pi-trash" (click)="removeSharedMember(member.user.id, currentRowData.id); op.toggle($event)"></i>
+                    </li>
+                  </ul>
                 </div>
               </p-overlayPanel>
           <p-button
             icon="pi pi-trash"
-            class="p-button-rounded p-button-text"
+            class=""
             (click)="deleteWorkspace(rowData.id)"
             [style]="{ 'margin-right': '.5em'}"/>
         </ng-container>
@@ -108,3 +127,5 @@
     </tr> 
   </ng-template>
 </p-treeTable>
+
+<link rel="stylesheet" href="https://unpkg.com/primeflex@latest/primeflex.css">     
