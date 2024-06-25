@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config";
 import authRouter from "./routers/auth.router";
+import fileRouter from "./routers/file-sys.router";
 import session from "express-session";
 
 const app = express();
@@ -19,6 +20,7 @@ app.use(session({
 const PORT = process.env.PORT || 3000;
 
 app.use("/auth", authRouter);
+app.use("/fs", fileRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

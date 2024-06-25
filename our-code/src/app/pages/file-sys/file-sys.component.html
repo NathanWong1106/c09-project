@@ -2,18 +2,19 @@
     <ng-template pTemplate="header">
         <tr>
             <th>Name</th>
-            <th>Size</th>
             <th>Type</th>
         </tr>
     </ng-template>
     <ng-template pTemplate="body" let-rowNode let-rowData="rowData">
-        <tr [ttRow]="rowNode">
+        <tr [ttRow]="rowNode" #tr>
             <td>
-                <p-treeTableToggler [rowNode]="rowNode" />
+                @if(rowData.type === 'file') {
+                    <p-treeTableToggler [rowNode]="rowNode" />
+                }
                 {{ rowData.name }}
             </td>
-            <td>{{ rowData.size }}</td>
             <td>{{ rowData.type }}</td>
         </tr>
+        <p-contextMenu [target]="tr" [model]="items" />
     </ng-template>
 </p-treeTable>

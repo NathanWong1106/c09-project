@@ -38,7 +38,7 @@ model Folder {
   parentId  Int?
   folders   Folder[] @relation("FolderToFolder")
   files     File[]
-  fileId    Int
+  fileId    Int?
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId Int
 }

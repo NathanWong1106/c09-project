@@ -13,12 +13,5 @@ import { HeaderComponent } from "./components/header/header.component";
 })
 export class AppComponent{
   constructor(private authService: AuthService, private router: Router) { 
-    this.authService.user$.subscribe((user) => {
-      if (user) {
-        router.navigate(['/workspaces']);
-      } else {
-        router.navigate(['/sign-in']);
-      }
-    });
   }
 }
