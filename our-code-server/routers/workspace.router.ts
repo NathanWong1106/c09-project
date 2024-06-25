@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getMyWorkspaces, createWorkspace, deleteWorkspace, findWorkspaceByName, editWorkspace } from "../db/workspacedb.util";
+import { getMyWorkspaces, createWorkspace, deleteWorkspace, findWorkspaceByName, editWorkspace, getMyWorkspacesTotal } from "../db/workspacedb.util";
 import { isAuthenticated } from "../middleware/auth.middleware";
 
 const workspaceRouter = Router();
@@ -41,13 +41,13 @@ workspaceRouter.delete("/:id", isAuthenticated, (req, res) => {
 });
 
 workspaceRouter.get("/search", isAuthenticated, (req, res) => {
-  // add pagination
+  const page = req.query.page ? parseInt(req.query.page as string) : 0;
   const name = req.query.name as string;
   if (!name) {
     return res.status(400).json({ error: "Workspace name is required" });
   }
 
-  findWorkspaceByName(name)
+  findWorkspaceByName(name, page)
     .then((workspace) => {
       if (workspace) {
         return res.status(200).json({ workspace });
@@ -70,6 +70,17 @@ workspaceRouter.patch("/edit/:id", isAuthenticated, (req, res) => {
     })
     .catch((err) => {
       return res.status(500).json({ error: "Failed to edit workspace" });
+    });
+});
+
+workspaceRouter.get("/total", isAuthenticated, (req, res) => {
+  const userId = req.session.user!.id;
+  getMyWorkspacesTotal(userId)
+    .then((total) => {
+      return res.status(200).json({ total });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: "Failed to get total workspaces" });
     });
 });
 

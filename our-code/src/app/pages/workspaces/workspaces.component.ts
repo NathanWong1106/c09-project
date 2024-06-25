@@ -50,6 +50,8 @@ export class WorkspacesComponent implements OnInit {
   workspaces: any[] = [];
   workspaceName: string = '';
   searchTerm: string = '';
+  totalRecords: number = 0;
+  currentPage: number = 0;
 
   cols: any[] = [
     { field: 'name', header: 'Name' },
@@ -71,7 +73,6 @@ export class WorkspacesComponent implements OnInit {
   copyShareUrl(sampleurl: string) {
     this.clipboard.copy(sampleurl);
     this.messageService.add({severity:'success', summary:'Success', detail:'URL copied to clipboard'});
-    console.log(this.currentRowData)
   }
 
   saveRowData(rowData: Workspace) {
@@ -131,7 +132,25 @@ export class WorkspacesComponent implements OnInit {
 
   initWorkspaces() {
     this.getWorkspaces(0);
+    this.getWorkspacesTotal();
   }    
+
+  onPageChange(event: any) {
+    this.currentPage = event.page;
+    this.getWorkspaces(event.page);
+  }
+
+  getWorkspacesTotal() {
+    this.workspaceService.getMyWorkspacesTotal().subscribe({
+      next: (response) => {
+        this.totalRecords = response.total;
+      },
+      error: (error) => {
+        console.error(error);
+        this.messageService.add({severity:'error', summary:'Error', detail:'Failed to get total workspaces'});
+      }
+    });
+  }
 
   editWorkspace(id: number, name: string) {
     this.workspaceService.editWorkspace(id, name).subscribe({
@@ -158,6 +177,11 @@ export class WorkspacesComponent implements OnInit {
       next: (response) => {
         this.workspaces = this.workspaces.filter((w) => w.data.id !== id);
         this.messageService.add({severity:'success', summary:'Success', detail:'Workspace successfully deleted'});
+        if (this.totalRecords / 10 < this.currentPage) {
+          this.currentPage -= 1;
+        }
+        this.getWorkspaces(this.currentPage);
+        this.totalRecords--;
       },
       error: (error) => {
         console.error(error);
@@ -188,14 +212,8 @@ export class WorkspacesComponent implements OnInit {
   createWorkspace(name: string) {
     this.workspaceService.createWorkspace(name).subscribe({
       next: (response) => {
-        this.workspaces = [...this.workspaces, 
-          { data: 
-            { name: 
-              response.workspace.name, 
-              owner: response.workspace.user.email, 
-              id: response.workspace.id 
-            } 
-          }];
+        this.getWorkspaces(this.currentPage);
+        this.totalRecords++;
         this.workspaceName = '';
         this.messageService.add({severity:'success', summary:'Success', detail:'Workspace successfully created'});
       },
@@ -210,6 +228,7 @@ export class WorkspacesComponent implements OnInit {
   findWorkspace(name: string) {
     if (!name) {
       this.getWorkspaces(0);
+      this.getWorkspacesTotal();
     } else {
       this.workspaceService.findWorkspaceByName(name).subscribe({
         next: (response) => {

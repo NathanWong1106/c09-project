@@ -3,19 +3,17 @@
   [value]="sharedworkspaces" 
   [columns]="cols" 
   [scrollable]="true" 
-  [rows]="10"
-  [paginator]="true"
   [tableStyle]="{ 'min-width': '50rem'}">
   <ng-template pTemplate="caption">
     <p-menubar class="no-border">
       <ng-template pTemplate="start">
-        <h2>My Workspaces</h2>
+        <h2>My Shared Workspaces</h2>
       </ng-template>
       <ng-template pTemplate="end">
-        <div class="flex">
+        <div class="flex" (keydown.enter)="findSharedWorkspace(searchTerm)">
           <div class="p-input-icon-left" [style]="{ 'margin-right': '1em'}">
             <i class="pi pi-search"></i>
-            <input type="text" pInputText placeholder="Search Workspaces..." [(ngModel)]="searchTerm" (input)="findSharedWorkspace(searchTerm)" />
+            <input type="text" pInputText placeholder="Search Workspaces..." [(ngModel)]="searchTerm" />
           </div>
         </div>
       </ng-template>
@@ -37,4 +35,9 @@
     </tr> 
   </ng-template>
 </p-treeTable>
+<p-paginator
+  (onPageChange)="onPageChange($event)"
+  [rows]="10"
+  [totalRecords]="totalRecords"
+/>
 

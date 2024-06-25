@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addMultiToSharedWorkspace, removeSharedWorkspace, getSharedWorkspaces, findSharedWorkspaceByName, getSharedUsers } from "../db/sharedworkspacedb.util";
+import { addMultiToSharedWorkspace, removeSharedWorkspace, getSharedWorkspaces, findSharedWorkspaceByName, getSharedUsers, getSharedWorkspacesTotal  } from "../db/sharedworkspacedb.util";
 import { isAuthenticated } from "../middleware/auth.middleware";
 
 const sharedWorkspaceRouter = Router();
@@ -71,6 +71,17 @@ sharedWorkspaceRouter.delete("/remove", isAuthenticated, async (req, res) => {
   } catch (err) {
     return res.status(500).json({ error: "Failed to remove shared workspace" });
   }
+});
+
+sharedWorkspaceRouter.get("/total", isAuthenticated, (req, res) => {
+  const userId = req.session.user!.id;
+  getSharedWorkspacesTotal (userId)
+    .then((total) => {
+      return res.status(200).json({ total });
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: "Failed to get total shared workspaces" });
+    });
 });
 
 export default sharedWorkspaceRouter;

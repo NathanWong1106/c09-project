@@ -35,6 +35,17 @@ export class SharedWorkspaceService {
     );
   }
 
+  public getSharedWorkspacesTotal() {
+    return this.authService.user$.pipe(
+      switchMap((user) => {
+        if (!user) {
+          return throwError(() => new Error('User not authenticated'));
+        }
+        return this.http.get<any>(`${this.endpoint}/api/sharedworkspace/total`, { withCredentials: true });
+      })
+    );
+  }
+
   public getSharedUsers(workspaceId: number) {
     return this.http.get<{ users: any[] }>(`${this.endpoint}/api/sharedworkspace/users?workspaceId=${workspaceId}`, { withCredentials: true });
   }

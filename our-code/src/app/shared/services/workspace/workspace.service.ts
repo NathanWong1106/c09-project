@@ -43,6 +43,17 @@ export class WorkspaceService {
     );
   }
 
+  public getMyWorkspacesTotal() {
+    return this.authService.user$.pipe(
+      switchMap((user) => {
+        if (!user) {
+          return throwError(() => new Error('User not authenticated'));
+        }
+        return this.http.get<any>(`${this.endpoint}/api/workspace/total`, { withCredentials: true });
+      })
+    );
+  }
+
   public findWorkspaceByName(name: string) {
     return this.http.get<Workspace>(`${this.endpoint}/api/workspace/search?name=${name}`, { withCredentials: true });
   }

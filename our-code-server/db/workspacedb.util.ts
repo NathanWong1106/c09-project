@@ -18,6 +18,16 @@ export const createWorkspace = async (userId: number, name: string) => {
   return workspace;
 };
 
+export const getMyWorkspacesTotal = async (userId: number) => {
+  const workspaces = await db.workspace.findMany({
+    where: {
+      userId,
+    },
+  });
+
+  return workspaces.length;
+}
+
 export const getMyWorkspaces = async (userId: number, page: number) => {
   const workspaces = await db.workspace.findMany({
     where: {
@@ -41,7 +51,7 @@ export const deleteWorkspace = async (workspaceId: number) => {
   });
 };
 
-export const findWorkspaceByName = async (name: string) => {
+export const findWorkspaceByName = async (name: string, page: number) => {
   const workspace = await db.workspace.findMany({
     where: {
       name,

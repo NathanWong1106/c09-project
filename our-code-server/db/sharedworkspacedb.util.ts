@@ -19,6 +19,16 @@ export const getSharedWorkspaces = async (userId: number, page: number) => {
   return workspaces;
 };
 
+export const getSharedWorkspacesTotal = async (userId: number) => {
+  const workspaces = await db.sharedWorkspace.findMany({
+    where: {
+      userId,
+    },
+  });
+
+  return workspaces.length;
+};
+
 export const findSharedWorkspaceByName = async (userId: number, name: string) => {
   const workspace = await db.sharedWorkspace.findMany({
     where: {

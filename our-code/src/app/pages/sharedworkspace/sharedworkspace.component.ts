@@ -10,6 +10,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { MessageService } from 'primeng/api';
 import { MessagesModule } from 'primeng/messages';
 import { ToastModule } from 'primeng/toast';
+import { PaginatorModule } from 'primeng/paginator';
 
 @Component({
   selector: 'app-sharedworkspace',
@@ -22,13 +23,16 @@ import { ToastModule } from 'primeng/toast';
     InputTextModule,
     FormsModule,
     MessagesModule,
-    ToastModule
+    ToastModule,
+    PaginatorModule
   ],
   templateUrl: './sharedworkspace.component.html',
   styleUrl: './sharedworkspace.component.css'
 })
 export class SharedWorkspaceComponent implements OnInit {
   searchTerm: string = '';
+  totalRecords: number = 0;
+  currentPage: number = 0;
   sharedworkspaces: any[] = [];
   cols: any[] = [
     { field: 'name', header: 'Name' },
@@ -39,6 +43,17 @@ export class SharedWorkspaceComponent implements OnInit {
 
   ngOnInit(): void {
     this.initSharedWorkspaces();
+  }
+
+  getSharedWorkspaceTotal() {
+    this.sharedWorkspaceService.getSharedWorkspacesTotal().subscribe({
+      next: (res) => {
+        this.totalRecords = res.total;
+      },
+      error: (error) => {
+        console.error('Error fetching shared workspaces total', error);
+      }
+    });
   }
 
   findSharedWorkspace(searchTerm: string) {
@@ -65,6 +80,12 @@ export class SharedWorkspaceComponent implements OnInit {
 
   initSharedWorkspaces() {
     this.getSharedworkspaces(0);
+    this.getSharedWorkspaceTotal();
+  }
+
+  onPageChange(event: any) {
+    this.currentPage = event.page;
+    this.getSharedworkspaces(event.page);
   }
 
   getSharedworkspaces(page: number) {

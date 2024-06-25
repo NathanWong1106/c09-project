@@ -2,9 +2,6 @@
 <p-treeTable 
 [value]="workspaces" 
 [columns]="cols" 
-[scrollable]="true" 
-[rows]="10"
-[paginator]="true"
 [tableStyle]="{ 'min-width': '50rem'}">
 <ng-template pTemplate="caption">
     <p-menubar>
@@ -127,5 +124,10 @@
     </tr> 
   </ng-template>
 </p-treeTable>
+<p-paginator
+  (onPageChange)="onPageChange($event)"
+  [rows]="10"
+  [totalRecords]="totalRecords"
+/>
 
 <link rel="stylesheet" href="https://unpkg.com/primeflex@latest/primeflex.css">     
