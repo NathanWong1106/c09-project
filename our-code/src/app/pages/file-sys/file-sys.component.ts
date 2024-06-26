@@ -19,6 +19,7 @@ import {
   File,
 } from '../../shared/services/file-sys/file-sys.interface';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 
 interface FileType {
   type: string;
@@ -62,10 +63,11 @@ export class FileSysComponent implements OnInit {
   constructor(
     private fileService: FileService,
     private cd: ChangeDetectorRef,
+    private activateRoute: ActivatedRoute,
   ) {}
 
   ngOnInit(): void {
-    this.workspaceId = 1;
+    this.workspaceId = this.activateRoute.snapshot.params['id'];
 
     this.types = [{ type: 'file' }, { type: 'folder' }];
 
