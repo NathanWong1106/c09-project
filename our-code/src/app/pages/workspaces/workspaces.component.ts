@@ -11,7 +11,6 @@ import { SharedWorkspaceService } from '../../shared/services/sharedworkspace/sh
 import { InputTextModule } from 'primeng/inputtext';
 import { InputGroupModule } from 'primeng/inputgroup';
 import { InputGroupAddonModule } from 'primeng/inputgroupaddon';
-import { Clipboard } from '@angular/cdk/clipboard';
 import { ChipsModule } from 'primeng/chips';
 import { Workspace } from '../../shared/services/workspace/workspace.interface';
 import { MessageService } from 'primeng/api';
@@ -44,7 +43,6 @@ import { PaginatorModule } from 'primeng/paginator';
 export class WorkspacesComponent implements OnInit {
   visibleEdit: boolean = false;
   visibleCreate: boolean = false;
-  sampleurl: string = 'sampeurl.real'
   currentRowData: any = {};
   members: string[] = [];
   workspaces: any[] = [];
@@ -61,18 +59,12 @@ export class WorkspacesComponent implements OnInit {
 
   constructor(
     private workspaceService: WorkspaceService, 
-    private clipboard: Clipboard, 
     private messageService: MessageService,
     private sharedWorkspaceService: SharedWorkspaceService, 
   ) { }
 
   ngOnInit(): void {
     this.initWorkspaces();
-  }
-
-  copyShareUrl(sampleurl: string) {
-    this.clipboard.copy(sampleurl);
-    this.messageService.add({severity:'success', summary:'Success', detail:'URL copied to clipboard'});
   }
 
   saveRowData(rowData: Workspace) {

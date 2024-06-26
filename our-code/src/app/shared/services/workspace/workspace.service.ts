@@ -67,10 +67,10 @@ export class WorkspaceService {
   }
 
   public shareWorkspace(workspaceId: number) {
-    return this.http.post(`${this.endpoint}/api/sharedworkspace/add`, { workspaceId });
+    return this.http.post(`${this.endpoint}/api/sharedworkspace/add`, { workspaceId }, { withCredentials: true });
   }
 
   public unshareWorkspace(workspaceId: number) {
-    return this.http.post(`${this.endpoint}/api/sharedworkspace/remove`, { workspaceId });
+    return this.http.post(`${this.endpoint}/api/sharedworkspace/remove`, { workspaceId }, { withCredentials: true });
   }
 }

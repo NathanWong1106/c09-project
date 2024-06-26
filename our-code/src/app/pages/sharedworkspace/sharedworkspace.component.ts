@@ -52,6 +52,7 @@ export class SharedWorkspaceComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error fetching shared workspaces total', error);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error fetching shared workspaces total' });
       }
     });
   }
@@ -73,6 +74,7 @@ export class SharedWorkspaceComponent implements OnInit {
         },
         error: (error) => {
           console.error('Error fetching shared workspace', error);
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error fetching shared workspace' });
         }
       });
     }
@@ -103,6 +105,7 @@ export class SharedWorkspaceComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error fetching shared workspaces', error);
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error fetching shared workspaces' });
       }
     })
   };

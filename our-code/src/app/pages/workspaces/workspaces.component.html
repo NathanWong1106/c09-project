@@ -79,17 +79,8 @@
             (click)="op.toggle($event); saveRowData(rowData)"
             [style]="{ 'margin-right': '.5em'}"/>
               <p-overlayPanel #op>
-                <div class="flex flex-column gap-3 w-25rem">
-                  <span class="font-medium text-900 block mb-2">Share this workspace</span>
-                  <p-inputGroup>
-                    <input pInputText [value]="sampleurl" readonly class="w-25rem"/>
-                    <p-inputGroupAddon>
-                        <i class="pi pi-copy" (click)="copyShareUrl(sampleurl)"></i>
-                    </p-inputGroupAddon>
-                  </p-inputGroup>
-                </div>
                 <div>
-                  <span class="font-medium text-900 block mb-2">Invite Member</span>
+                  <span class="font-medium text-900 block mb-2">Invite Member(s)</span>
                   <div class="flex">
                     <p-chips [(ngModel)]="members" [style]="{ 'margin-right': '.5em'}"/>
                     <p-button label="Invite" icon="pi pi-users" (click)="shareMember(members, currentRowData); op.toggle($event)"/>
@@ -109,14 +100,14 @@
                         <span class="font-medium">{{ member.user.email }}</span>
                         <span class="text-sm">Editor</span>
                       </div>
-                      <i class="pi pi-trash" (click)="removeSharedMember(member.user.id, currentRowData.id); op.toggle($event)"></i>
+                      <i class="pi pi-trash cursor-pointer" (click)="removeSharedMember(member.user.id, currentRowData.id); op.toggle($event)"></i>
                     </li>
                   </ul>
                 </div>
               </p-overlayPanel>
           <p-button
             icon="pi pi-trash"
-            class=""
+            class="p-button-rounded p-button-text"
             (click)="deleteWorkspace(rowData.id)"
             [style]="{ 'margin-right': '.5em'}"/>
         </ng-container>
@@ -129,5 +120,3 @@
   [rows]="10"
   [totalRecords]="totalRecords"
 />
-
-<link rel="stylesheet" href="https://unpkg.com/primeflex@latest/primeflex.css">     
