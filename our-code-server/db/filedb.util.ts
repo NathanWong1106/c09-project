@@ -140,14 +140,14 @@ export const getFileById = async (fileId: number) => {
   return file;
 };
 
-export const getFileByName = async (name: string, parentId: number) => {
-  const folder = await db.file.findFirst({
+export const getFileByName = async (workspaceId: number, name: string) => {
+  const file = await db.file.findFirst({
     where: {
       name: name,
-      parentId: parentId,
+      workspaceId: workspaceId,
     },
   });
-  return folder;
+  return file;
 }
 
 export const deleteFile = async (fileId: number) => {

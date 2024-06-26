@@ -4,10 +4,11 @@
     [columns]="cols"
     [paginator]="true" 
     [rows]="10" 
-    (onLazyLoad)="loadNodes($event)"
+    (onLazyLoad)="loadNodes()"
     [loading]="loading"
     (onNodeExpand)="onNodeExpand($event)"
     [value]="files"
+    (contextmenu)="onContextMenu($event, null)"
     [scrollable]="true"
     [tableStyle]="{'min-width':'50rem'}">
         <ng-template pTemplate="header" let-columns>
@@ -18,7 +19,7 @@
             </tr>
         </ng-template>
         <ng-template pTemplate="body" let-rowNode let-rowData="rowData" let-columns="columns">
-            <tr [ttRow]="rowNode">
+            <tr [ttRow]="rowNode" (contextmenu)="onContextMenu($event, rowNode)">
                 <td *ngFor="let col of columns; let i = index">
                     <p-treeTableToggler [rowNode]="rowNode" *ngIf="i === 0" />
                     {{ rowData[col.field] }}
@@ -26,6 +27,19 @@
             </tr>
         </ng-template>
 </p-treeTable>
+
+<p-contextMenu #cm [model]="menuItems" (onHide)="onHide()">
+    <ng-template pTemplate="item" let-item>
+        <a pRipple class="flex align-items-center p-menuitem-link">
+            <span class="item.icon"></span>
+            <span class="ml-2">{{ item.label }}</span>
+            <span *ngIf="item.shortcut" class="ml-auto border-1 surface-border border-round surface-100 text-xs p-1">
+                {{ item.shortcut }}
+            </span>
+            <i *ngIf="item.items" class="pi pi-angle-right ml-auto"></i>
+        </a>
+    </ng-template>
+</p-contextMenu>
 
 <p-dialog header="Create File" [modal]="true" [(visible)]="visible" [style]="{ width: '25rem' }">
     <form [formGroup]="createFileFormGroup">

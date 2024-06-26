@@ -21,8 +21,14 @@ export class FileService {
     });
   }
 
-  getFolderByName(workspaceId: number, folderName: string) {
-    return this.http.get(this.endpoint + `/api/fs/folder?workspaceId=${workspaceId}&folderName=${folderName}`, {
+  getFolderById(id: number) {
+    return this.http.get(this.endpoint + `/api/fs/folder?folderId=${id}`, {
+      withCredentials: true,
+    });
+  }
+
+  getFileById(id: number) {
+    return this.http.get(this.endpoint + `/api/fs/file?fileId=${id}`, {
       withCredentials: true,
     });
   }
@@ -37,8 +43,8 @@ export class FileService {
     });
   }
 
-  deleteItem(workspaceId: number, id: number, type: string) {
-    return this.http.delete(this.endpoint + `/api/fs?workspaceId=${workspaceId}&type=${type}&id=${id}`, {
+  deleteItem(itemId: number, type: string) {
+    return this.http.delete(this.endpoint + `/api/fs?itemId=${itemId}&type=${type}`, {
       withCredentials: true,
     });
   }

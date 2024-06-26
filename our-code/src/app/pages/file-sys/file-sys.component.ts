@@ -1,7 +1,7 @@
-import { ChangeDetectorRef, Component, OnInit, output } from '@angular/core';
+import { ChangeDetectorRef, Component, OnInit, ViewChild, output } from '@angular/core';
 import { TreeTableModule } from 'primeng/treetable';
 import { MenuItem, TreeNode } from 'primeng/api';
-import { ContextMenuModule } from 'primeng/contextmenu';
+import { ContextMenu, ContextMenuModule } from 'primeng/contextmenu';
 import { ButtonModule } from 'primeng/button';
 import { FileService } from '../../shared/services/file-sys/file-sys.service';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
@@ -45,9 +45,11 @@ export class FileSysComponent implements OnInit {
   error: string = ''; // string representing the error message
   workspaceId!: number; // number representing the workspace id
   files!: TreeNode[];
-  items!: MenuItem[];
+  menuItems!: MenuItem[];
   loading: boolean = false;
   cols!: Column[];
+  @ViewChild('cm') cm!: ContextMenu;
+  selectedItem!: any;
 
   constructor(private fileService: FileService, private cd: ChangeDetectorRef) {
   }
@@ -69,9 +71,26 @@ export class FileSysComponent implements OnInit {
       filename: new FormControl<string | null>(null),
       filetype: new FormControl<FileType | null>(null)
     });
+
+    this.menuItems = [
+      {
+        label: 'Add File or Folder',
+        icon: 'pi pi-plus',
+        command: (event) => {
+          this.showDialog();
+        }
+      },
+      {
+        label: 'Delete',
+        icon: 'pi pi-times',
+        command: (event) => {
+          this.deleteItem(this.selectedItem.node.data.id, this.selectedItem.node.data.type); // Placeholders
+        }
+      }
+    ];
   }
 
-  loadNodes(event: any): void {
+  loadNodes(): void {
     this.loading = true;
     this.fileService.getCurrentFilesys(this.workspaceId, 0).subscribe({
       next: (res) => {
@@ -80,6 +99,7 @@ export class FileSysComponent implements OnInit {
         for (let item of items) {
           let node: TreeNode = {
             data: {
+              id: item.id,
               name: item.name,
               type: item.type,
             },
@@ -103,34 +123,26 @@ export class FileSysComponent implements OnInit {
     this.loading = true;
     const node = event.node;
 
-    this.fileService.getFolderByName(this.workspaceId, node.data.name).subscribe({
+    // This may break with more folders. Need a better way to do getFolderByName
+    this.fileService.getCurrentFilesys(this.workspaceId, node.data.id).subscribe({
       next: (res) => {
-        const folder = <Folder> res;
-        this.fileService.getCurrentFilesys(this.workspaceId, folder.id).subscribe({
-          next: (res) => {
-            const items = <{ id: number, name: string, type: string }[]> res;
-            let nodeChildren = [];
-            for (let item of items) {
-              let childNode = {
-                data: {
-                  name: item.name,
-                  type: item.type,
-                },
-                leaf: item.type === 'file' ? true : false
-              };
-              nodeChildren.push(childNode);
-            }
-            node.children = nodeChildren;
-            this.files = [...this.files]; // Ensure immutability for change detection
-            this.loading = false;
-            this.cd.markForCheck();
-          },
-          error: (err) => {
-            this.error = err.error.error;
-            this.loading = false;
-            this.cd.markForCheck();
-          }
-        });
+        const items = <{ id: number, name: string, type: string }[]> res;
+        let nodeChildren = [];
+        for (let item of items) {
+          let childNode = {
+            data: {
+              id: item.id,
+              name: item.name,
+              type: item.type,
+            },
+            leaf: item.type === 'file' ? true : false
+          };
+          nodeChildren.push(childNode);
+        }
+        node.children = nodeChildren;
+        this.files = [...this.files]; // Ensure immutability for change detection
+        this.loading = false;
+        this.cd.markForCheck();
       },
       error: (err) => {
         this.error = err.error.error;
@@ -143,7 +155,7 @@ export class FileSysComponent implements OnInit {
   addItem(name: string, type: string, parentId: number) {
     this.fileService.addItem(this.workspaceId, name, type, parentId).subscribe({
       next: () => {
-        // this.loadNodes();
+        this.loadNodes();
         this.error = '';
       },
       error: (err) => {
@@ -153,9 +165,9 @@ export class FileSysComponent implements OnInit {
   }
 
   deleteItem(id: number, type: string) {
-    this.fileService.deleteItem(this.workspaceId, id, type).subscribe({
+    this.fileService.deleteItem(id, type).subscribe({
       next: () => {
-        // this.loadNodes();
+        this.loadNodes();
         this.error = '';
       },
       error: (err) => {
@@ -165,17 +177,38 @@ export class FileSysComponent implements OnInit {
   }
 
   submitFileForm() {
-    this.fileService.addItem(this.workspaceId, this.createFileFormGroup?.value.filename, this.createFileFormGroup?.value.filetype, 1).subscribe({
-      next: () => {
-        this.visible = false;
-      },
-      error: (err) => {
-        console.error(err);
-      }
-    });
+    if (this.selectedItem && this.selectedItem.node.parent === "folder") {
+      this.fileService.getFolderById(this.selectedItem.node).subscribe({
+        next: (res) => {
+          const folder = <Folder> res;
+          this.addItem(this.createFileFormGroup?.value.filename, this.createFileFormGroup?.value.filetype, folder.id)
+          this.visible = false;
+        },
+        error: (err) => {
+          console.error(err);
+        }
+      });
+    } else {
+      this.addItem(this.createFileFormGroup?.value.filename, this.createFileFormGroup?.value.filetype, 0);
+      this.visible = false;
+    }
   }
 
   showDialog() {
-      this.visible = true;
+    this.visible = true;
+  }
+
+  onContextMenu(event: MouseEvent, rowData: any) {
+    // Prevent the default context menu from appearing
+    event.preventDefault();
+    this.selectedItem = rowData;
+    console.log(rowData);
+    if (event.button === 2) {
+      this.cm.show(event);
+    }
+  }
+
+  onHide() {
+    this.selectedItem = null;
   }
 }
