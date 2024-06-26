@@ -104,7 +104,7 @@ export class FileSysComponent implements OnInit {
 
   loadNodes(): void {
     this.loading = true;
-    this.fileService.getCurrentFilesys(this.workspaceId, 0).subscribe({
+    this.fileService.getContentForFolder(this.workspaceId, 0).subscribe({
       next: (res) => {
         const items = <{ id: number; name: string; type: string }[]>res;
         let newFiles = [];
@@ -137,7 +137,7 @@ export class FileSysComponent implements OnInit {
 
     // This may break with more folders. Need a better way to do getFolderByName
     this.fileService
-      .getCurrentFilesys(this.workspaceId, node.data.id)
+      .getContentForFolder(this.workspaceId, node.data.id)
       .subscribe({
         next: (res) => {
           const items = <{ id: number; name: string; type: string }[]>res;
@@ -191,7 +191,6 @@ export class FileSysComponent implements OnInit {
   }
 
   submitFileForm() {
-    console.log(this.selectedItem);
     const parentId =
       this.selectedItem && this.selectedItem.node.data.type === 'folder'
         ? this.selectedItem.node.data.id
@@ -224,7 +223,6 @@ export class FileSysComponent implements OnInit {
     // Prevent the default context menu from appearing
     event.preventDefault();
     this.selectedItem = rowData;
-    console.log(rowData);
     if (event.button === 2) {
       this.cm.show(event);
     }

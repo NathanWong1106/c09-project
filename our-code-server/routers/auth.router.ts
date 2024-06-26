@@ -30,7 +30,6 @@ authRouter.post("/login", async (req, res) => {
   };
 
   req.session.user = userSess;
-  console.log(req.session.user);
 
   return res.status(200).json({ user: userSess });
 });

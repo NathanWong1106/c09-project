@@ -20,7 +20,6 @@ export class AuthService {
     this.me().subscribe({
       next: (response) => {
         this.isAuth = true;
-        console.log(this.isAuth);
         this.user.next(response.user);
       },
       error: (error) => {

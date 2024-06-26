@@ -10,7 +10,7 @@ export class FileService {
 
   constructor(private http: HttpClient) {}
 
-  getCurrentFilesys(workspaceId: number, parentId?: number) {
+  getContentForFolder(workspaceId: number, parentId?: number) {
     // Get root level
     if (!parentId) {
       parentId = 0;
