@@ -59,7 +59,7 @@ export class FileSysComponent implements OnInit {
 
     this.types = [
       { type: 'file' },
-      { type: 'folder' }
+      { type: 'folder' },
     ];
 
     this.cols = [
@@ -177,21 +177,20 @@ export class FileSysComponent implements OnInit {
   }
 
   submitFileForm() {
-    if (this.selectedItem && this.selectedItem.node.parent === "folder") {
-      this.fileService.getFolderById(this.selectedItem.node).subscribe({
-        next: (res) => {
-          const folder = <Folder> res;
-          this.addItem(this.createFileFormGroup?.value.filename, this.createFileFormGroup?.value.filetype, folder.id)
-          this.visible = false;
-        },
-        error: (err) => {
-          console.error(err);
-        }
-      });
-    } else {
-      this.addItem(this.createFileFormGroup?.value.filename, this.createFileFormGroup?.value.filetype, 0);
-      this.visible = false;
-    }
+    console.log(this.selectedItem);
+    const parentId = (this.selectedItem && this.selectedItem.node.data.type === "folder") ? this.selectedItem.node.data.id : 0;
+    this.fileService.addItem(this.workspaceId, this.createFileFormGroup.value.filename, this.createFileFormGroup.value.filetype.type, parentId)
+    .subscribe({
+      next: () => {
+        this.loadNodes();
+        this.error = '';
+        this.visible = false;
+        this.createFileFormGroup.reset();
+      },
+      error: (err) => {
+        this.error = err.error.error
+      }
+    });
   }
 
   showDialog() {
@@ -209,6 +208,6 @@ export class FileSysComponent implements OnInit {
   }
 
   onHide() {
-    this.selectedItem = null;
+    // this.selectedItem = null;
   }
 }

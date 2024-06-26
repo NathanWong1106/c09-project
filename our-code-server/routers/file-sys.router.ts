@@ -43,7 +43,7 @@ fileRouter.post("/", async (req, res) => {
   if (typeof req.query.parentId !== "string" || !parseInt(req.query.parentId)) {
     return res.status(400).json({ error: "Parent ID not accepted" });
   }
-  const parentId = req.query.parentId ? parseInt(req.query.parentId) : null;
+  const parentId = parseInt(req.query.parentId) ? parseInt(req.query.parentId) : null;
   if (req.body.type === "folder") {
     const folder = parentId
       ? await createFolder(req.body.name, parseInt(req.query.workspaceId), parentId)

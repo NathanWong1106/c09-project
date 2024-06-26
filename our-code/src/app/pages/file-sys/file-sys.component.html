@@ -42,7 +42,7 @@
 </p-contextMenu>
 
 <p-dialog header="Create File" [modal]="true" [(visible)]="visible" [style]="{ width: '25rem' }">
-    <form [formGroup]="createFileFormGroup">
+    <form [formGroup]="createFileFormGroup" id="create-file-form">
         <span class="p-text-secondary block mb-5">Add an item</span>
         <div class="flex align-items-center gap-3 mb-3">
             <label for="filename" class="font-semibold w-6rem">File name</label>
@@ -52,7 +52,7 @@
             <label for="filetype" class="font-semibold w-6rem">File type</label>
             <p-dropdown  id="filetype" formControlName="filetype"
             [options]="types"
-            optionLabel="name"
+            optionLabel="type"
             placeholder="Select a type" />
         </div>
         <div class="flex justify-content-end gap-2">
