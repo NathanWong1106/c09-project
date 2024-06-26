@@ -14,16 +14,18 @@ export const createFolder = async (
           id: workspaceId,
         },
       },
-      parent: {
+      parent: parentId
+      ? {
         connect: {
           id: parentId,
         },
-      },
+      }
+      : undefined,
       files: {},
     },
     include: {
       workspace: true,
-      parent: parentId ? true : false,
+      parent: true,
     },
   });
 
@@ -43,11 +45,13 @@ export const createFile = async (
           id: workspaceId,
         },
       },
-      parent: {
+      parent: parentId
+      ? {
         connect: {
           id: parentId,
         },
-      },
+      }
+      : undefined,
       content: "", // Should probably change format
     },
     include: {

@@ -69,12 +69,10 @@ fileRouter.post("/", async (req, res) => {
   ) {
     return res.status(400).json({ error: "Workspace ID not accepted" });
   }
-  if (typeof req.query.parentId !== "string" || !parseInt(req.query.parentId)) {
+  if (typeof req.query.parentId !== "string") {
     return res.status(400).json({ error: "Parent ID not accepted" });
   }
   const parentId = parseInt(req.query.parentId)
-    ? parseInt(req.query.parentId)
-    : null;
   if (req.body.type === "folder") {
     const folder = parentId
       ? await createFolder(
@@ -82,7 +80,10 @@ fileRouter.post("/", async (req, res) => {
           parseInt(req.query.workspaceId),
           parentId,
         )
-      : await createFolder(req.body.name, parseInt(req.query.workspaceId));
+      : await createFolder(
+          req.body.name,
+          parseInt(req.query.workspaceId)
+        );
     return res.status(200).json(folder);
   }
   if (req.body.type === "file") {
@@ -92,7 +93,10 @@ fileRouter.post("/", async (req, res) => {
           parseInt(req.query.workspaceId),
           parentId,
         )
-      : await createFile(req.body.name, parseInt(req.query.workspaceId));
+      : await createFile(
+          req.body.name,
+          parseInt(req.query.workspaceId)
+        );
     return res.status(200).json(file);
   } else {
     return res.status(400).json({ error: "Type not accepted" });
