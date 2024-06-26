@@ -1,6 +1,7 @@
+import { Folder, File } from "@prisma/client";
 import db from "./dbConn";
 
-export const createFolder = async (name: string, workspaceId: number, parentId: number) => {
+export const createFolder = async (name: string, workspaceId: number, parentId?: number) => {
   const folder = await db.folder.create({
     data: {
       name: name,
@@ -19,14 +20,14 @@ export const createFolder = async (name: string, workspaceId: number, parentId: 
     },
     include: {
       workspace: true,
-      parent: true,
+      parent: (parentId) ? true : false,
     },
   });
 
   return folder;
 };
 
-export const createFile = async (name: string, workspaceId: number, parentId: number) => {
+export const createFile = async (name: string, workspaceId: number, parentId?: number) => {
   const file = await db.file.create({
     data: {
       name: name,
@@ -51,6 +52,66 @@ export const createFile = async (name: string, workspaceId: number, parentId: nu
   return file;
 };
 
+export const getCurrentLevelItems = async (workspaceId: number, parentId: number): Promise<{ id: number, name: string, type: string }[]> => {
+  let items: { id: number, name: string, type: string }[] = [];
+
+  if (parentId === 0) {
+    const folders: Folder[] = await db.folder.findMany({
+      where: {
+        workspaceId: workspaceId,
+        parentId: null,
+      },
+    });
+
+    items = folders.map((folder: Folder) => ({
+      id: folder.id,
+      name: folder.name,
+      type: 'folder'
+    }));
+
+    const files: File[] = await db.file.findMany({
+      where: {
+        workspaceId: workspaceId,
+        parentId: null,
+      },
+    });
+
+    items.push(...files.map((file: File) => ({
+      id: file.id,
+      name: file.name,
+      type: 'file'
+    })));
+  } else {
+    const folders: Folder[] = await db.folder.findMany({
+      where: {
+        workspaceId: workspaceId,
+        parentId: parentId,
+      },
+    });
+
+    items = folders.map((folder: Folder) => ({
+      id: folder.id,
+      name: folder.name,
+      type: 'folder'
+    }));
+
+    const files: File[] = await db.file.findMany({
+      where: {
+        workspaceId: workspaceId,
+        parentId: parentId,
+      },
+    });
+
+    items.push(...files.map((file: File) => ({
+      id: file.id,
+      name: file.name,
+      type: 'file'
+    })));
+  }
+
+  return items;
+};
+
 export const getFolderById = async (folderId: number) => {
   const folder = await db.folder.findUnique({
     where: {
@@ -60,11 +121,11 @@ export const getFolderById = async (folderId: number) => {
   return folder;
 };
 
-export const getFolderByName = async (name: string, parentId: number) => {
+export const getFolderByName = async (workspaceId: number, name: string) => {
   const folder = await db.folder.findFirst({
     where: {
       name: name,
-      parentId: parentId,
+      workspaceId: workspaceId,
     },
   });
   return folder;

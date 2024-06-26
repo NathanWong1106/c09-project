@@ -11,14 +11,24 @@ export class FileService {
 
   constructor(private http: HttpClient) {}
 
-  getFileSys() {
-    return this.http.get(this.endpoint + `/workspaces/:wid/fs`, {
+  getCurrentFilesys(workspaceId: number, parentId?: number) {
+    // Get root level
+    if (!parentId) {
+      parentId = 0;
+    }
+    return this.http.get(this.endpoint + `/api/fs?workspaceId=${workspaceId}&parentId=${parentId}`, {
       withCredentials: true,
     });
   }
 
-  addFile(name: string, type: string, parentId: number) {
-    return this.http.post(this.endpoint + `/workspaces/:wid/fs?parentId=${parentId}`, {
+  getFolderByName(workspaceId: number, folderName: string) {
+    return this.http.get(this.endpoint + `/api/fs/folder?workspaceId=${workspaceId}&folderName=${folderName}`, {
+      withCredentials: true,
+    });
+  }
+
+  addItem(workspaceId: number, name: string, type: string, parentId: number) {
+    return this.http.post(this.endpoint + `/api/fs?workspaceId=${workspaceId}&parentId=${parentId}`, {
       name: name,
       type: type,
     },
@@ -27,8 +37,8 @@ export class FileService {
     });
   }
 
-  deleteFile(id: number) {
-    return this.http.delete(this.endpoint + `/workspaces/:wid/fs?id=${id}`, {
+  deleteItem(workspaceId: number, id: number, type: string) {
+    return this.http.delete(this.endpoint + `/api/fs?workspaceId=${workspaceId}&type=${type}&id=${id}`, {
       withCredentials: true,
     });
   }

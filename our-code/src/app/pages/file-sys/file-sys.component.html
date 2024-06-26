@@ -1,20 +1,49 @@
-<p-treeTable [value]="files" [scrollable]="true" [tableStyle]="{'min-width':'50rem'}">
-    <ng-template pTemplate="header">
-        <tr>
-            <th>Name</th>
-            <th>Type</th>
-        </tr>
-    </ng-template>
-    <ng-template pTemplate="body" let-rowNode let-rowData="rowData">
-        <tr [ttRow]="rowNode" #tr>
-            <td>
-                @if(rowData.type === 'file') {
-                    <p-treeTableToggler [rowNode]="rowNode" />
-                }
-                {{ rowData.name }}
-            </td>
-            <td>{{ rowData.type }}</td>
-        </tr>
-        <p-contextMenu [target]="tr" [model]="items" />
-    </ng-template>
+<p-button label="Create File" (click)="showDialog()" class="mb-5"></p-button>
+<p-treeTable
+    [lazy]="true"
+    [columns]="cols"
+    [paginator]="true" 
+    [rows]="10" 
+    (onLazyLoad)="loadNodes($event)"
+    [loading]="loading"
+    (onNodeExpand)="onNodeExpand($event)"
+    [value]="files"
+    [scrollable]="true"
+    [tableStyle]="{'min-width':'50rem'}">
+        <ng-template pTemplate="header" let-columns>
+            <tr>
+                <th *ngFor="let col of columns">
+                    {{ col.header }}
+                </th>
+            </tr>
+        </ng-template>
+        <ng-template pTemplate="body" let-rowNode let-rowData="rowData" let-columns="columns">
+            <tr [ttRow]="rowNode">
+                <td *ngFor="let col of columns; let i = index">
+                    <p-treeTableToggler [rowNode]="rowNode" *ngIf="i === 0" />
+                    {{ rowData[col.field] }}
+                </td>
+            </tr>
+        </ng-template>
 </p-treeTable>
+
+<p-dialog header="Create File" [modal]="true" [(visible)]="visible" [style]="{ width: '25rem' }">
+    <form [formGroup]="createFileFormGroup">
+        <span class="p-text-secondary block mb-5">Add an item</span>
+        <div class="flex align-items-center gap-3 mb-3">
+            <label for="filename" class="font-semibold w-6rem">File name</label>
+            <input pInputText formControlName="filename" id="filename" class="flex-auto" autocomplete="off" />
+        </div>
+        <div class="flex align-items-center gap-3 mb-5">
+            <label for="filetype" class="font-semibold w-6rem">File type</label>
+            <p-dropdown  id="filetype" formControlName="filetype"
+            [options]="types"
+            optionLabel="name"
+            placeholder="Select a type" />
+        </div>
+        <div class="flex justify-content-end gap-2">
+            <p-button label="Cancel" severity="secondary" (click)="visible = false" />
+            <p-button label="Save" (click)="submitFileForm()" />
+        </div>
+    </form>
+</p-dialog>

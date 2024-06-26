@@ -20,7 +20,7 @@ app.use(session({
 const PORT = process.env.PORT || 3000;
 
 app.use("/auth", authRouter);
-app.use("/fs", fileRouter);
+app.use("/api/fs", fileRouter);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
