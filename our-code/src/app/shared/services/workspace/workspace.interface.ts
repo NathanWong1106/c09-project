@@ -1,9 +1,9 @@
 import { User } from '../auth/auth.interface';
 
 export interface Workspace {
-    workspace: any;
-    id: number;
-    name: string;
-    owner: string;
-    user: User;
+  workspace: any;
+  id: number;
+  name: string;
+  owner: string;
+  user: User;
 }

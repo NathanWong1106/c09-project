@@ -1,7 +1,11 @@
 import { Folder, File } from "@prisma/client";
 import db from "./dbConn";
 
-export const createFolder = async (name: string, workspaceId: number, parentId?: number) => {
+export const createFolder = async (
+  name: string,
+  workspaceId: number,
+  parentId?: number,
+) => {
   const folder = await db.folder.create({
     data: {
       name: name,
@@ -15,19 +19,22 @@ export const createFolder = async (name: string, workspaceId: number, parentId?:
           id: parentId,
         },
       },
-      files: {
-      },
+      files: {},
     },
     include: {
       workspace: true,
-      parent: (parentId) ? true : false,
+      parent: parentId ? true : false,
     },
   });
 
   return folder;
 };
 
-export const createFile = async (name: string, workspaceId: number, parentId?: number) => {
+export const createFile = async (
+  name: string,
+  workspaceId: number,
+  parentId?: number,
+) => {
   const file = await db.file.create({
     data: {
       name: name,
@@ -52,8 +59,11 @@ export const createFile = async (name: string, workspaceId: number, parentId?: n
   return file;
 };
 
-export const getCurrentLevelItems = async (workspaceId: number, parentId: number): Promise<{ id: number, name: string, type: string }[]> => {
-  let items: { id: number, name: string, type: string }[] = [];
+export const getCurrentLevelItems = async (
+  workspaceId: number,
+  parentId: number,
+): Promise<{ id: number; name: string; type: string }[]> => {
+  let items: { id: number; name: string; type: string }[] = [];
 
   if (parentId === 0) {
     const folders: Folder[] = await db.folder.findMany({
@@ -66,7 +76,7 @@ export const getCurrentLevelItems = async (workspaceId: number, parentId: number
     items = folders.map((folder: Folder) => ({
       id: folder.id,
       name: folder.name,
-      type: 'folder'
+      type: "folder",
     }));
 
     const files: File[] = await db.file.findMany({
@@ -76,11 +86,13 @@ export const getCurrentLevelItems = async (workspaceId: number, parentId: number
       },
     });
 
-    items.push(...files.map((file: File) => ({
-      id: file.id,
-      name: file.name,
-      type: 'file'
-    })));
+    items.push(
+      ...files.map((file: File) => ({
+        id: file.id,
+        name: file.name,
+        type: "file",
+      })),
+    );
   } else {
     const folders: Folder[] = await db.folder.findMany({
       where: {
@@ -92,7 +104,7 @@ export const getCurrentLevelItems = async (workspaceId: number, parentId: number
     items = folders.map((folder: Folder) => ({
       id: folder.id,
       name: folder.name,
-      type: 'folder'
+      type: "folder",
     }));
 
     const files: File[] = await db.file.findMany({
@@ -102,11 +114,13 @@ export const getCurrentLevelItems = async (workspaceId: number, parentId: number
       },
     });
 
-    items.push(...files.map((file: File) => ({
-      id: file.id,
-      name: file.name,
-      type: 'file'
-    })));
+    items.push(
+      ...files.map((file: File) => ({
+        id: file.id,
+        name: file.name,
+        type: "file",
+      })),
+    );
   }
 
   return items;
@@ -129,7 +143,7 @@ export const getFolderByName = async (workspaceId: number, name: string) => {
     },
   });
   return folder;
-}
+};
 
 export const getFileById = async (fileId: number) => {
   const file = await db.folder.findUnique({
@@ -148,7 +162,7 @@ export const getFileByName = async (workspaceId: number, name: string) => {
     },
   });
   return file;
-}
+};
 
 export const deleteFile = async (fileId: number) => {
   const file = await db.file.delete({
@@ -157,7 +171,7 @@ export const deleteFile = async (fileId: number) => {
     },
   });
   return file;
-}
+};
 
 export const deleteFolder = async (folderId: number) => {
   const folder = await db.folder.delete({
@@ -166,4 +180,4 @@ export const deleteFolder = async (folderId: number) => {
     },
   });
   return folder;
-}
+};

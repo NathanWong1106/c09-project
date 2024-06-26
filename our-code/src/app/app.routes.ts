@@ -12,12 +12,12 @@ export const routes: Routes = [
   {
     path: 'workspaces',
     component: WorkspacesComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard],
   },
   {
     path: 'workspaces/:id/fs',
     component: FileSysComponent,
-    canActivate: [AuthGuard]
+    canActivate: [AuthGuard],
   },
   {
     path: '**',

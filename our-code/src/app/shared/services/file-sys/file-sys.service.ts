@@ -3,10 +3,9 @@ import { environment } from '../../../../environments/environment';
 import { HttpClient } from '@angular/common/http';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class FileService {
-
   private endpoint = environment.apiEndpoint;
 
   constructor(private http: HttpClient) {}
@@ -16,9 +15,12 @@ export class FileService {
     if (!parentId) {
       parentId = 0;
     }
-    return this.http.get(this.endpoint + `/api/fs?workspaceId=${workspaceId}&parentId=${parentId}`, {
-      withCredentials: true,
-    });
+    return this.http.get(
+      this.endpoint + `/api/fs?workspaceId=${workspaceId}&parentId=${parentId}`,
+      {
+        withCredentials: true,
+      },
+    );
   }
 
   getFolderById(id: number) {
@@ -34,18 +36,24 @@ export class FileService {
   }
 
   addItem(workspaceId: number, name: string, type: string, parentId: number) {
-    return this.http.post(this.endpoint + `/api/fs?workspaceId=${workspaceId}&parentId=${parentId}`, {
-      name: name,
-      type: type,
-    },
-    {
-      withCredentials: true,
-    });
+    return this.http.post(
+      this.endpoint + `/api/fs?workspaceId=${workspaceId}&parentId=${parentId}`,
+      {
+        name: name,
+        type: type,
+      },
+      {
+        withCredentials: true,
+      },
+    );
   }
 
   deleteItem(itemId: number, type: string) {
-    return this.http.delete(this.endpoint + `/api/fs?itemId=${itemId}&type=${type}`, {
-      withCredentials: true,
-    });
+    return this.http.delete(
+      this.endpoint + `/api/fs?itemId=${itemId}&type=${type}`,
+      {
+        withCredentials: true,
+      },
+    );
   }
 }

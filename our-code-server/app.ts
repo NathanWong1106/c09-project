@@ -7,15 +7,19 @@ import session from "express-session";
 
 const app = express();
 app.use(express.json());
-app.use(cors({
-  origin: process.env.CLIENT_URL || "http://localhost:4200",
-  credentials: true,
-}));
-app.use(session({
-  secret: 'keyboard cat',
-  resave: false,
-  saveUninitialized: false,
-}));
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL || "http://localhost:4200",
+    credentials: true,
+  }),
+);
+app.use(
+  session({
+    secret: "keyboard cat",
+    resave: false,
+    saveUninitialized: false,
+  }),
+);
 
 const PORT = process.env.PORT || 3000;
 

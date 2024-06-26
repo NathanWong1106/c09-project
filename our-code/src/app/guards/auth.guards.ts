@@ -9,14 +9,16 @@ import { map } from 'rxjs';
 
 export const AuthGuard: CanActivateFn = (
   next: ActivatedRouteSnapshot,
-  state: RouterStateSnapshot
+  state: RouterStateSnapshot,
 ) => {
-    return inject(AuthService).me().pipe(
-        map((response) => {
-            if (response.user) {
-                return true;
-            }
-            return false;
-        })
+  return inject(AuthService)
+    .me()
+    .pipe(
+      map((response) => {
+        if (response.user) {
+          return true;
+        }
+        return false;
+      }),
     );
 };
