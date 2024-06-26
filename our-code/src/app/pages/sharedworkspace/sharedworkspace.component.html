@@ -1,0 +1,43 @@
+<p-toast></p-toast>
+<p-treeTable 
+  [value]="sharedworkspaces" 
+  [columns]="cols" 
+  [scrollable]="true" 
+  [tableStyle]="{ 'min-width': '50rem'}">
+  <ng-template pTemplate="caption">
+    <p-menubar class="no-border">
+      <ng-template pTemplate="start">
+        <h2>My Shared Workspaces</h2>
+      </ng-template>
+      <ng-template pTemplate="end">
+        <div class="flex" (keydown.enter)="findSharedWorkspace(searchTerm)">
+          <div class="p-input-icon-left" [style]="{ 'margin-right': '1em'}">
+            <i class="pi pi-search"></i>
+            <input type="text" pInputText placeholder="Search Workspaces..." [(ngModel)]="searchTerm" />
+          </div>
+        </div>
+      </ng-template>
+    </p-menubar>
+  </ng-template>
+  <ng-template pTemplate="header">
+    <tr>
+      <th *ngFor="let col of cols">
+        {{ col.header }}
+      </th>
+    </tr>
+  </ng-template>
+  <ng-template pTemplate="body" let-rowNode let-rowData="rowData">
+    <tr [ttRow]="rowNode">
+      <td *ngFor="let col of cols; let i = index; let last = last">
+        <p-treeTableToggler [rowNode]="rowNode" *ngIf="i === 0"></p-treeTableToggler>
+        <span>{{ rowData[col.field] }}</span>
+      </td>
+    </tr> 
+  </ng-template>
+</p-treeTable>
+<p-paginator
+  (onPageChange)="onPageChange($event)"
+  [rows]="10"
+  [totalRecords]="totalRecords"
+/>
+

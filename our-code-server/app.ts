@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import "dotenv/config";
 import authRouter from "./routers/auth.router";
+import workspaceRouter from "./routers/workspace.router";
+import sharedWorkspaceRouter from "./routers/sharedworkspace.router";
 import fileRouter from "./routers/file-sys.router";
 import session from "express-session";
 
@@ -24,6 +26,8 @@ app.use(
 const PORT = process.env.PORT || 3000;
 
 app.use("/auth", authRouter);
+app.use("/api/workspace", workspaceRouter);
+app.use("/api/sharedworkspace", sharedWorkspaceRouter);
 app.use("/api/fs", fileRouter);
 
 app.listen(PORT, () => {

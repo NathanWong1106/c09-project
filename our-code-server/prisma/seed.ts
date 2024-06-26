@@ -16,18 +16,18 @@ async function main() {
   const demoUser = await prisma.user.create({
     data: {
       email: "demouser@example.com", // Replace with your desired email
-      ownedWorkspaces: {
+      workspaces: {
         create: {
           name: "My Workspace",
         },
       },
     },
     include: {
-      ownedWorkspaces: true, // To include the created workspace in the response
+      workspaces: true, // To include the created workspace in the response
     },
   });
 
-  const demoWorkspaceId = demoUser.ownedWorkspaces[0].id;
+  const demoWorkspaceId = demoUser.workspaces[0].id;
 
   const folder = await prisma.folder.create({
     data: {
@@ -74,7 +74,7 @@ async function main() {
   });
 
   console.log(
-    `Created user with id: ${demoUser.id} and workspace with id: ${demoUser.ownedWorkspaces[0].id}`,
+    `Created user with id: ${demoUser.id} and workspace with id: ${demoUser.workspaces[0].id}`,
   );
   console.log("All Done...");
 }
