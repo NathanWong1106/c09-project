@@ -10,7 +10,9 @@ import { BehaviorSubject, Observable } from 'rxjs';
 export class AuthService {
   private endpoint = environment.apiEndpoint;
 
-  private user: BehaviorSubject<User | null> = new BehaviorSubject<User | null>(null);
+  private user: BehaviorSubject<User | null> = new BehaviorSubject<User | null>(
+    null,
+  );
   private isAuth: boolean = false;
   public user$: Observable<User | null> = this.user.asObservable();
 
@@ -18,14 +20,13 @@ export class AuthService {
     this.me().subscribe({
       next: (response) => {
         this.isAuth = true;
-        console.log(this.isAuth);
         this.user.next(response.user);
       },
       error: (error) => {
         this.isAuth = false;
         this.user.next(null);
       },
-    })
+    });
   }
 
   public login(token: string) {
@@ -39,7 +40,7 @@ export class AuthService {
       (error) => {
         this.isAuth = false;
         console.error(error);
-      }
+      },
     );
   }
 
@@ -51,7 +52,7 @@ export class AuthService {
       },
       (error) => {
         console.error(error);
-      }
+      },
     );
   }
 
@@ -73,7 +74,7 @@ export class AuthService {
       },
       {
         withCredentials: true,
-      }
+      },
     );
   }
 

@@ -19,6 +19,7 @@ model User {
   createdAt DateTime @default(now())
   workspaces Workspace[]
   sharedWorkspaces SharedWorkspace[]
+  comments Comments[]
 }
 
 model Workspace {
@@ -27,6 +28,8 @@ model Workspace {
   user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    Int
   sharedUsers SharedWorkspace[]
+  folders   Folder[]
+  files     File[]
 }
 
 model SharedWorkspace {
@@ -36,4 +39,37 @@ model SharedWorkspace {
   workspaceId Int
 
   @@id([userId, workspaceId])
+}
+
+model Folder {
+  id        Int      @id @default(autoincrement())
+  name      String
+  parent    Folder?  @relation("FolderToFolder", fields: [parentId], references: [id], onDelete: Cascade)
+  parentId  Int?
+  folders   Folder[] @relation("FolderToFolder")
+  files     File[]
+  fileId    Int?
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId Int
+}
+
+model File {
+  id        Int      @id @default(autoincrement())
+  content   String
+  name      String
+  parent    Folder?  @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  parentId  Int?
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  workspaceId Int
+  comments  Comments[]
+}
+
+model Comments {
+  id        Int      @id @default(autoincrement())
+  content   String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  file      File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
+  fileId    Int
+  createdAt DateTime @default(now())
 }

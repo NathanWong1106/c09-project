@@ -12,14 +12,14 @@ authRouter.post("/login", async (req, res) => {
   }
 
   const data = await fetch(
-    `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${req.body.token}`
+    `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${req.body.token}`,
   );
 
-  const gUserInfo: GoogleUser = await data.json() as GoogleUser;
+  const gUserInfo: GoogleUser = (await data.json()) as GoogleUser;
   let dbUser = await getUserByEmail(gUserInfo.email);
-  
+
   if (dbUser === null) {
-    dbUser = await createUser(gUserInfo.email)
+    dbUser = await createUser(gUserInfo.email);
   }
 
   const userSess: UserSession = {
@@ -30,7 +30,6 @@ authRouter.post("/login", async (req, res) => {
   };
 
   req.session.user = userSess;
-  console.log(req.session.user);
 
   return res.status(200).json({ user: userSess });
 });
