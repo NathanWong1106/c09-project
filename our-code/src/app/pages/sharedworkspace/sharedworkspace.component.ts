@@ -94,14 +94,9 @@ export class SharedWorkspaceComponent implements OnInit {
     this.sharedWorkspaceService.getSharedWorkspaces(page).subscribe({
       next: (workspaces) => {
         this.sharedworkspaces = [];
-        if (workspaces.length === 0) {
-          this.messageService.add({ severity: 'info', summary: 'Info', detail: 'No shared workspaces found' });
-        } else {
-          for (const workspace of workspaces) {
-            this.sharedworkspaces = [...this.sharedworkspaces, { data: { name: workspace.workspace.name, owner: workspace.workspace.user.email, id: workspace.workspace.id } }];
-          }
+        for (const workspace of workspaces) {
+          this.sharedworkspaces = [...this.sharedworkspaces, { data: { name: workspace.workspace.name, owner: workspace.workspace.user.email, id: workspace.workspace.id } }];
         }
-
       },
       error: (error) => {
         console.error('Error fetching shared workspaces', error);
