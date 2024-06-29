@@ -50,26 +50,19 @@ export const findSharedWorkspaceByName = async (userId: number, name: string) =>
 };
 
 export const addMultiToSharedWorkspace = async (workspaceId: number, members: string[]) => {
-  const owner = await db.workspace.findUnique({
-    where: {
-      id: workspaceId,
-    },
-    select: {
-      user: true,
-    },
-  });
-
   const userIds = await db.user.findMany({
     where: {
       email: {
         in: members,
-        not: owner?.user.email,
       },
     },
     select: {
       id: true,
     },
   });
+  if (userIds.length !== members.length) {
+    return { error: "Some users do not exist" };
+  };
 
   const sharedWorkspace = userIds.map((user) => {
     return {

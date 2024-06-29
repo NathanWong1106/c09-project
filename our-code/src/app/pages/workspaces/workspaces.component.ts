@@ -102,7 +102,11 @@ export class WorkspacesComponent implements OnInit {
     }
     else {
       this.sharedWorkspaceService.addSharedWorkspace(rowData.id, members).subscribe({
-        next: (response) => {
+        next: (response: any) => {
+          if (response.userIds.error) {
+            this.messageService.add({severity:'error', summary:'Error', detail:'Some users do not exist'});
+            return;
+          }
           this.messageService.add({severity:'success', summary:'Success', detail:'Workspace successfully shared'});
         },
         error: (error) => {

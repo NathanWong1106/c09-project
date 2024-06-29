@@ -15,28 +15,28 @@
               <i class="pi pi-search"></i>
               <input type="text" pInputText placeholder="Search Workspaces..." [(ngModel)]="searchTerm" />
             </div>
-          </div>
             <p-button
             label="Create Workspace"
             icon="pi pi-plus"
             (click)="showDialogCreate()"
             [style]="{ 'margin-right': '.5em'}"/>
             <p-dialog
-              header="Create a Workspace"
-              [(visible)]="visibleCreate"
-              [modal]="true"
-              [style]="{ 'width': '50vw'}">
-              <div class="flex align-items-center gap-3 mb-5">
-                <label for="name" [style]="{ 'margin-right': '1em'}">Name</label>
-                <input pInputText id="name" class="flex-auto" [(ngModel)]="workspaceName" autocomplete="off"/>
-              </div>
-              <ng-template pTemplate="footer">
-                <p-button
-                  label="Create"
-                  (click)="createWorkspace(workspaceName)"
-                  [style]="{ 'margin-right': '.5em'}"/>
-              </ng-template>
-            </p-dialog>
+            header="Create a Workspace"
+            [(visible)]="visibleCreate"
+            [modal]="true"
+            [style]="{ 'width': '50vw'}">
+            <div class="flex align-items-center gap-3 mb-5">
+              <label for="name" [style]="{ 'margin-right': '1em'}">Name</label>
+              <input pInputText id="name" class="flex-auto" [(ngModel)]="workspaceName" autocomplete="off"/>
+            </div>
+            <ng-template pTemplate="footer">
+              <p-button
+              label="Create"
+              (click)="createWorkspace(workspaceName)"
+              [style]="{ 'margin-right': '.5em'}"/>
+            </ng-template>
+          </p-dialog>
+        </div>
         </ng-template>
       </p-menubar>
     </ng-template>

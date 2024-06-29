@@ -55,7 +55,7 @@ sharedWorkspaceRouter.post("/add", isAuthenticated, async (req, res) => {
 
   try {
     const userIds = await addMultiToSharedWorkspace(workspaceId, members);
-    return res.status(200).json({ message: "Shared with", userIds});
+    return res.status(200).json({ userIds });
   } catch (err) {
     return res.status(500).json({ error: "Failed to share workspace" });
   }
