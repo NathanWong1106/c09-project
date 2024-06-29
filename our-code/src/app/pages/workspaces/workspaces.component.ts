@@ -186,12 +186,8 @@ export class WorkspacesComponent implements OnInit {
     this.workspaceService.getMyWorkspaces(page).subscribe({
       next: (workspaces) => {
         this.workspaces = [];
-        if (workspaces.length === 0) {
-          this.messageService.add({severity:'info', summary:'Info', detail:'No workspaces found'});
-        } else {
-          for (const workspace of workspaces) {
-            this.workspaces = [...this.workspaces, { data: { name: workspace.name, owner: workspace.user.email, id: workspace.id } }];
-          }
+        for (const workspace of workspaces) {
+          this.workspaces = [...this.workspaces, { data: { name: workspace.name, owner: workspace.user.email, id: workspace.id } }];
         }
       },
       error: (error) => {
