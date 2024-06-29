@@ -1,55 +1,64 @@
 import db from "./dbConn";
 
 export const getSharedWorkspaces = async (userId: number, page: number) => {
-  const workspaces = await db.sharedWorkspace.findMany({
-    where: {
-      userId,
-    },
-    skip: page * 10,
-    take: 10,
-    include: {
-      workspace: {
-        include: {
-          user: true,
+  const workspaces = await db.$transaction([
+    db.sharedWorkspace.findMany({
+      where: {
+        userId,
+      },
+      skip: page * 10,
+      take: 10,
+      include: {
+        workspace: {
+          include: {
+            user: true,
+          },
         },
       },
-    },
-  });
-
+    }),
+    db.sharedWorkspace.count({
+      where: {
+        userId,
+      },
+    }),
+  ]);
   return workspaces;
 };
 
-export const getSharedWorkspacesTotal = async (userId: number) => {
-  const workspaces = await db.sharedWorkspace.findMany({
-    where: {
-      userId,
-    },
-  });
-
-  return workspaces.length;
-};
-
-export const findSharedWorkspaceByName = async (userId: number, name: string) => {
-  const workspace = await db.sharedWorkspace.findMany({
-    where: {
-      userId,
-      workspace: {
-        name,
-      },
-    },
-    include: {
-      workspace: {
-        include: {
-          user: true,
+export const findSharedWorkspacesByName = async (userId: number, name: string, page: number) => {
+  const workspace = await db.$transaction([
+    db.sharedWorkspace.findMany({
+      where: {
+        userId,
+        workspace: {
+          name,
         },
       },
-    },
-  });
+      skip: page * 10,
+      take: 10,
+      include: {
+        workspace: {
+          include: {
+            user: true,
+          },
+        },
+      },
+    }),
+    db.sharedWorkspace.count({
+      where: {
+        userId,
+        workspace: {
+          name,
+        },
+      },
+    }),
+  ]);
 
   return workspace;
 };
 
 export const addMultiToSharedWorkspace = async (workspaceId: number, members: string[]) => {
+  members = [...new Set(members)] 
   const userIds = await db.user.findMany({
     where: {
       email: {
@@ -70,7 +79,7 @@ export const addMultiToSharedWorkspace = async (workspaceId: number, members: st
       workspaceId,
     };
   });
-
+  
   await db.sharedWorkspace.createMany({
     data: sharedWorkspace,
     skipDuplicates: true,

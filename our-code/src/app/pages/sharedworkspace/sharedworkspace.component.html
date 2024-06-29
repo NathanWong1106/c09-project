@@ -11,7 +11,7 @@
         <h2>My Shared Workspaces</h2>
       </ng-template>
       <ng-template pTemplate="end">
-        <div class="flex" (keydown.enter)="findSharedWorkspace(searchTerm)">
+        <div class="flex" (keydown.enter)="findSharedWorkspace(searchTerm, currentPage)">
           <div class="p-input-icon-left mr-4">
             <i class="pi pi-search"></i>
             <input type="text" pInputText placeholder="Search Workspaces..." [(ngModel)]="searchTerm" />
