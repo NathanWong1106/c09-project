@@ -93,16 +93,25 @@ export class WorkspacesComponent implements OnInit {
     });
   };
 
-  shareMember(members: string[], rowData: Workspace) {
+  shareMember(members: string[], rowData: any) {
+    const sharedUsers = rowData.sharedUsers.map((u: any) => u.user.email);
+
     if (members.length === 0) {
       this.messageService.add({severity:'error', summary:'Error', detail:'Please enter a member'});
     }
     else if (members.includes(rowData.owner)) {
       this.messageService.add({severity:'error', summary:'Error', detail:'Owner cannot be added as a member'});
     }
+    else if (members.some(member => sharedUsers.includes(member))) {
+      this.messageService.add({severity:'error', summary:'Error', detail:'User is already a shared member'});
+    }
     else {
       this.sharedWorkspaceService.addSharedWorkspace(rowData.id, members).subscribe({
-        next: (response) => {
+        next: (response: any) => {
+          if (response.userIds.error) {
+            this.messageService.add({severity:'error', summary:'Error', detail:'Some users do not exist'});
+            return;
+          }
           this.messageService.add({severity:'success', summary:'Success', detail:'Workspace successfully shared'});
         },
         error: (error) => {
@@ -124,24 +133,15 @@ export class WorkspacesComponent implements OnInit {
 
   initWorkspaces() {
     this.getWorkspaces(0);
-    this.getWorkspacesTotal();
   }    
 
   onPageChange(event: any) {
     this.currentPage = event.page;
-    this.getWorkspaces(event.page);
-  }
-
-  getWorkspacesTotal() {
-    this.workspaceService.getMyWorkspacesTotal().subscribe({
-      next: (response) => {
-        this.totalRecords = response.total;
-      },
-      error: (error) => {
-        console.error(error);
-        this.messageService.add({severity:'error', summary:'Error', detail:'Failed to get total workspaces'});
-      }
-    });
+    if (this.searchTerm) {
+      this.findWorkspace(this.searchTerm, event.page);
+    } else {
+      this.getWorkspaces(event.page);
+    }
   }
 
   editWorkspace(id: number, name: string) {
@@ -169,11 +169,11 @@ export class WorkspacesComponent implements OnInit {
       next: (response) => {
         this.workspaces = this.workspaces.filter((w) => w.data.id !== id);
         this.messageService.add({severity:'success', summary:'Success', detail:'Workspace successfully deleted'});
-        if (this.totalRecords / 10 < this.currentPage) {
-          this.currentPage -= 1;
+        this.totalRecords--;
+        if (this.totalRecords / 10 <= this.currentPage) {
+          this.currentPage = this.currentPage - 1 > 0 ? this.currentPage - 1 : 0;
         }
         this.getWorkspaces(this.currentPage);
-        this.totalRecords--;
       },
       error: (error) => {
         console.error(error);
@@ -184,14 +184,12 @@ export class WorkspacesComponent implements OnInit {
 
   getWorkspaces(page: number) {
     this.workspaceService.getMyWorkspaces(page).subscribe({
-      next: (workspaces) => {
+      next: (res) => {
+        this.totalRecords = res.total;
+        this.currentPage = page;
         this.workspaces = [];
-        if (workspaces.length === 0) {
-          this.messageService.add({severity:'info', summary:'Info', detail:'No workspaces found'});
-        } else {
-          for (const workspace of workspaces) {
-            this.workspaces = [...this.workspaces, { data: { name: workspace.name, owner: workspace.user.email, id: workspace.id } }];
-          }
+        for (const workspace of res.workspaces) {
+          this.workspaces = [...this.workspaces, { data: { name: workspace.name, owner: workspace.user.email, id: workspace.id } }];
         }
       },
       error: (error) => {
@@ -205,7 +203,6 @@ export class WorkspacesComponent implements OnInit {
     this.workspaceService.createWorkspace(name).subscribe({
       next: (response) => {
         this.getWorkspaces(this.currentPage);
-        this.totalRecords++;
         this.workspaceName = '';
         this.messageService.add({severity:'success', summary:'Success', detail:'Workspace successfully created'});
       },
@@ -217,16 +214,16 @@ export class WorkspacesComponent implements OnInit {
     this.visibleCreate = false;
   }
 
-  findWorkspace(name: string) {
+  findWorkspace(name: string, page: number) {
     if (!name) {
-      this.getWorkspaces(0);
-      this.getWorkspacesTotal();
+      this.getWorkspaces(page);
     } else {
-      this.workspaceService.findWorkspaceByName(name).subscribe({
-        next: (response) => {
+      this.workspaceService.findWorkspaceByName(name, page).subscribe({
+        next: (res) => {
+          this.totalRecords = res.total;
           this.workspaces = [];
-          if (response.workspace.length > 0) {
-            for (const workspace of response.workspace) {
+          if (res.workspace.length > 0) {
+            for (const workspace of res.workspace) {
               this.workspaces = [...this.workspaces, { data: { name: workspace.name, owner: workspace.user.email, id: workspace.id } }];
             }
           } else {

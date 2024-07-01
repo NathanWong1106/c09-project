@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { addMultiToSharedWorkspace, removeSharedWorkspace, getSharedWorkspaces, findSharedWorkspaceByName, getSharedUsers, getSharedWorkspacesTotal  } from "../db/sharedworkspacedb.util";
+import { addMultiToSharedWorkspace, removeSharedWorkspace, getSharedWorkspaces, findSharedWorkspacesByName, getSharedUsers  } from "../db/sharedworkspacedb.util";
 import { isAuthenticated } from "../middleware/auth.middleware";
 
 const sharedWorkspaceRouter = Router();
@@ -9,7 +9,7 @@ sharedWorkspaceRouter.get("/", isAuthenticated, (req, res) => {
   const userId = req.session.user!.id;
   getSharedWorkspaces(userId, page)
     .then((workspaces) => {
-      return res.status(200).json({ workspaces });
+      return res.status(200).json({ workspaces: workspaces[0], total: workspaces[1] });
     })
     .catch((err) => {
       return res.status(500).json({ error: "Failed to get shared workspaces" });
@@ -28,7 +28,6 @@ sharedWorkspaceRouter.get("/users", isAuthenticated, (req, res) => {
 });
 
 sharedWorkspaceRouter.get("/search", isAuthenticated, (req, res) => {
-  //TODO: pagination
   const page = req.query.page ? parseInt(req.query.page as string) : 0;
   const name = req.query.name as string;
   const userId = req.session.user!.id;
@@ -36,12 +35,12 @@ sharedWorkspaceRouter.get("/search", isAuthenticated, (req, res) => {
     return res.status(400).json({ error: "Workspace name is required" });
   }
 
-  findSharedWorkspaceByName(userId, name)
-    .then((workspace) => {
-      if (workspace) {
-        return res.status(200).json({ workspace });
+  findSharedWorkspacesByName(userId, name, page)
+    .then((workspaces) => {
+      if (workspaces) {
+        return res.status(200).json({ workspace: workspaces[0], total: workspaces[1]});
       } else {
-        return res.status(404).json({ message: "Workspace not found" });
+        return res.status(404).json({ workspace: null, total: 0 });
       }
     })
     .catch((err) => {
@@ -55,7 +54,7 @@ sharedWorkspaceRouter.post("/add", isAuthenticated, async (req, res) => {
 
   try {
     const userIds = await addMultiToSharedWorkspace(workspaceId, members);
-    return res.status(200).json({ message: "Shared with", userIds});
+    return res.status(200).json({ userIds });
   } catch (err) {
     return res.status(500).json({ error: "Failed to share workspace" });
   }
@@ -71,17 +70,6 @@ sharedWorkspaceRouter.delete("/remove", isAuthenticated, async (req, res) => {
   } catch (err) {
     return res.status(500).json({ error: "Failed to remove shared workspace" });
   }
-});
-
-sharedWorkspaceRouter.get("/total", isAuthenticated, (req, res) => {
-  const userId = req.session.user!.id;
-  getSharedWorkspacesTotal (userId)
-    .then((total) => {
-      return res.status(200).json({ total });
-    })
-    .catch((err) => {
-      return res.status(500).json({ error: "Failed to get total shared workspaces" });
-    });
 });
 
 export default sharedWorkspaceRouter;

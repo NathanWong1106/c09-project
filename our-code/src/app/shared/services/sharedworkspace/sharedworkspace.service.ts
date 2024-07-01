@@ -21,27 +21,10 @@ export class SharedWorkspaceService {
         if (!user) {
           return throwError(() => new Error('User not authenticated'));
         }
-        return this.http.get<{ workspaces: Workspace[] }>(
+        return this.http.get<{ workspaces: Workspace[], total: number }>(
           `${this.endpoint}/api/sharedworkspace?page=${page}`,
           { withCredentials: true }
-        ).pipe(
-          map((response: { workspaces: Workspace[] }) => response.workspaces),
-          catchError(error => {
-            console.error('Error fetching shared workspaces', error);
-            return of([]);
-          })
         );
-      })
-    );
-  }
-
-  public getSharedWorkspacesTotal() {
-    return this.authService.user$.pipe(
-      switchMap((user) => {
-        if (!user) {
-          return throwError(() => new Error('User not authenticated'));
-        }
-        return this.http.get<any>(`${this.endpoint}/api/sharedworkspace/total`, { withCredentials: true });
       })
     );
   }
@@ -58,7 +41,7 @@ export class SharedWorkspaceService {
     return this.http.delete(`${this.endpoint}/api/sharedworkspace/remove?userId=${userId}&workspaceId=${workspaceId}`, { withCredentials: true });
   }
 
-  public findSharedWorkspaceByName(name: string) {
-    return this.http.get<Workspace>(`${this.endpoint}/api/sharedworkspace/search?name=${name}`, { withCredentials: true });
+  public findSharedWorkspacesByName(name: string, page: number) {
+    return this.http.get<{workspace: Workspace[], total: number}>(`${this.endpoint}/api/sharedworkspace/search?name=${name}&page=${page}`, { withCredentials: true });
   }
 }

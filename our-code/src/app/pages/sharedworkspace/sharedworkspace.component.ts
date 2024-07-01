@@ -45,24 +45,13 @@ export class SharedWorkspaceComponent implements OnInit {
     this.initSharedWorkspaces();
   }
 
-  getSharedWorkspaceTotal() {
-    this.sharedWorkspaceService.getSharedWorkspacesTotal().subscribe({
-      next: (res) => {
-        this.totalRecords = res.total;
-      },
-      error: (error) => {
-        console.error('Error fetching shared workspaces total', error);
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error fetching shared workspaces total' });
-      }
-    });
-  }
-
-  findSharedWorkspace(searchTerm: string) {
+  findSharedWorkspace(searchTerm: string, page: number) {
     if (!searchTerm) {
       this.getSharedworkspaces(0);
     } else {
-      this.sharedWorkspaceService.findSharedWorkspaceByName(searchTerm).subscribe({
+      this.sharedWorkspaceService.findSharedWorkspacesByName(searchTerm, page).subscribe({
         next: (res) => {
+          this.totalRecords = res.total;
           this.sharedworkspaces = [];
           if (res.workspace.length > 0) {
             for (const workspace of res.workspace) {
@@ -82,7 +71,6 @@ export class SharedWorkspaceComponent implements OnInit {
 
   initSharedWorkspaces() {
     this.getSharedworkspaces(0);
-    this.getSharedWorkspaceTotal();
   }
 
   onPageChange(event: any) {
@@ -92,16 +80,12 @@ export class SharedWorkspaceComponent implements OnInit {
 
   getSharedworkspaces(page: number) {
     this.sharedWorkspaceService.getSharedWorkspaces(page).subscribe({
-      next: (workspaces) => {
+      next: (res) => {
+        this.totalRecords = res.total;
         this.sharedworkspaces = [];
-        if (workspaces.length === 0) {
-          this.messageService.add({ severity: 'info', summary: 'Info', detail: 'No shared workspaces found' });
-        } else {
-          for (const workspace of workspaces) {
-            this.sharedworkspaces = [...this.sharedworkspaces, { data: { name: workspace.workspace.name, owner: workspace.workspace.user.email, id: workspace.workspace.id } }];
-          }
+        for (const workspace of res.workspaces) {
+          this.sharedworkspaces = [...this.sharedworkspaces, { data: { name: workspace.workspace.name, owner: workspace.workspace.user.email, id: workspace.workspace.id } }];
         }
-
       },
       error: (error) => {
         console.error('Error fetching shared workspaces', error);
