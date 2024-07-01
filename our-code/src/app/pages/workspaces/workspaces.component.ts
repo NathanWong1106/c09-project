@@ -171,7 +171,7 @@ export class WorkspacesComponent implements OnInit {
         this.messageService.add({severity:'success', summary:'Success', detail:'Workspace successfully deleted'});
         this.totalRecords--;
         if (this.totalRecords / 10 <= this.currentPage) {
-          this.currentPage -= 1;
+          this.currentPage = this.currentPage - 1 > 0 ? this.currentPage - 1 : 0;
         }
         this.getWorkspaces(this.currentPage);
       },
