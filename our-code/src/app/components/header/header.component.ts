@@ -7,6 +7,7 @@ import { TieredMenuModule } from 'primeng/tieredmenu';
 import { AuthService } from '../../shared/services/auth/auth.service';
 import { environment } from '../../../environments/environment';
 import { ButtonModule } from 'primeng/button';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-header',
@@ -33,7 +34,7 @@ export class HeaderComponent implements OnInit {
   client: any;
   profilePicture: string = '';
 
-  constructor(private authService: AuthService) {
+  constructor(private authService: AuthService, private router: Router) {
     this.authService.user$.subscribe((user) => {
       if (user) {
         this.isAuth = true;
@@ -55,7 +56,14 @@ export class HeaderComponent implements OnInit {
       scope: 'email profile',
       ux_mode: 'popup',
       callback: (response: any) => {
-        this.authService.login(response.access_token);
+        this.authService.login(response.access_token).subscribe({
+          next: (_) => {
+            this.router.navigate([this.authService.getRedirectUrl()]);
+          },
+          error: (error) => {
+            console.error(error);
+          },
+        });
       },
     });
   }
@@ -65,6 +73,8 @@ export class HeaderComponent implements OnInit {
   }
 
   handleSignOut() {
-    this.authService.logout();
+    this.authService.logout().subscribe((_) => {
+      this.router.navigate(['/sign-in']);
+    });
   }
 }

@@ -11,49 +11,51 @@ export class AuthService {
   private endpoint = environment.apiEndpoint;
 
   private user: BehaviorSubject<User | null> = new BehaviorSubject<User | null>(
-    null,
+    null
   );
   private isAuth: boolean = false;
+
+  private DEFAULT_REDIRECT_URL: string = '/workspaces';
+  private redirectUrl: string = this.DEFAULT_REDIRECT_URL;
+
   public user$: Observable<User | null> = this.user.asObservable();
 
-  constructor(private http: HttpClient) {
-    this.me().subscribe({
-      next: (response) => {
-        this.isAuth = true;
-        this.user.next(response.user);
-      },
-      error: (error) => {
-        this.isAuth = false;
-        this.user.next(null);
-      },
+  constructor(private http: HttpClient) {}
+
+  public login(token: string): Observable<boolean> {
+    return new Observable((observer) => {
+      this.doLogin(token).subscribe({
+        next: (response) => {
+          this.me().subscribe((response) => {
+            this.isAuth = true;
+            this.user.next(response.user);
+            observer.next(true);
+          });
+        },
+        error: (error) => {
+          this.isAuth = false;
+          console.error(error);
+          observer.next(false);
+        },
+      });
     });
   }
 
-  public login(token: string) {
-    this.doLogin(token).subscribe(
-      (response) => {
-        this.me().subscribe((response) => {
-          this.isAuth = true;
-          this.user.next(response.user);
-        });
-      },
-      (error) => {
-        this.isAuth = false;
-        console.error(error);
-      },
-    );
-  }
-
-  public logout() {
-    this.doLogout().subscribe(
-      (response) => {
-        this.isAuth = false;
-        this.user.next(null);
-      },
-      (error) => {
-        console.error(error);
-      },
-    );
+  public logout(): Observable<boolean> {
+    return new Observable((observer) => {
+      this.doLogout().subscribe({
+        next: (response) => {
+          this.isAuth = false;
+          this.user.next(null);
+          this.redirectUrl = this.DEFAULT_REDIRECT_URL;
+          observer.next(true);
+        },
+        error: (error) => {
+          console.error(error);
+          observer.next(false);
+        },
+      });
+    });
   }
 
   public isAuthenticated(): boolean {
@@ -66,6 +68,43 @@ export class AuthService {
     });
   }
 
+  /**
+   * Check if the user is authenticated by calling the /auth/me endpoint
+   * If the user has already been authenticated, does not make the request again.
+   *
+   * @returns Observable<boolean>
+   */
+  public checkAuth(): Observable<boolean> {
+    if (this.isAuth) {
+      return new Observable((observer) => {
+        observer.next(true);
+      });
+    } else {
+      return new Observable((observer) => {
+        this.me().subscribe({
+          next: (response) => {
+            this.isAuth = true;
+            this.user.next(response.user);
+            observer.next(true);
+          },
+          error: (error) => {
+            this.isAuth = false;
+            this.user.next(null);
+            observer.next(false);
+          },
+        });
+      });
+    }
+  }
+
+  public getRedirectUrl(): string {
+    return this.redirectUrl;
+  }
+
+  public setRedirectUrl(url: string): void {
+    this.redirectUrl = url;
+  }
+
   private doLogin(token: string): Observable<any> {
     return this.http.post<any>(
       `${this.endpoint}/auth/login`,
@@ -74,7 +113,7 @@ export class AuthService {
       },
       {
         withCredentials: true,
-      },
+      }
     );
   }
 
