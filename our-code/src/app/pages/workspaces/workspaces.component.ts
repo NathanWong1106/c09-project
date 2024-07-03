@@ -74,7 +74,6 @@ export class WorkspacesComponent implements OnInit {
         this.currentRowData.sharedUsers = response.users
       },
       error: (error) => {
-        console.error(error);
         this.messageService.add({severity:'error', summary:'Error', detail:'Failed to get shared users'});
       }
     });
@@ -87,7 +86,6 @@ export class WorkspacesComponent implements OnInit {
         this.messageService.add({severity:'success', summary:'Success', detail:'Member successfully removed'});
       },
       error: (error) => {
-        console.error(error);
         this.messageService.add({severity:'error', summary:'Error', detail:'Failed to remove member'});
       }
     });
@@ -115,7 +113,6 @@ export class WorkspacesComponent implements OnInit {
           this.messageService.add({severity:'success', summary:'Success', detail:'Workspace successfully shared'});
         },
         error: (error) => {
-          console.error(error);
           this.messageService.add({severity:'error', summary:'Error', detail:'Failed to share workspace'});
         }
       });
@@ -157,7 +154,6 @@ export class WorkspacesComponent implements OnInit {
         this.messageService.add({severity:'success', summary:'Success', detail:'Workspace name successfully edited'});
       },
       error: (error) => {
-        console.error(error);
         this.messageService.add({severity:'error', summary:'Error', detail:'Failed to edit workspace'});
       }
     });
@@ -176,7 +172,6 @@ export class WorkspacesComponent implements OnInit {
         this.getWorkspaces(this.currentPage);
       },
       error: (error) => {
-        console.error(error);
         this.messageService.add({severity:'error', summary:'Error', detail:'Failed to delete workspace'});
       }
     });
@@ -193,7 +188,6 @@ export class WorkspacesComponent implements OnInit {
         }
       },
       error: (error) => {
-        console.error(error);
         this.messageService.add({severity:'error', summary:'Error', detail:'Failed to get workspaces'});
       }
     });
@@ -207,7 +201,6 @@ export class WorkspacesComponent implements OnInit {
         this.messageService.add({severity:'success', summary:'Success', detail:'Workspace successfully created'});
       },
       error: (error) => {
-        console.error(error);
         this.messageService.add({severity:'error', summary:'Error', detail:'Failed to create workspace'});
       }
     });
@@ -231,7 +224,7 @@ export class WorkspacesComponent implements OnInit {
           }
         },
         error: (error) => {
-          console.error(error);
+          this.messageService.add({severity:'error', summary:'Error', detail:'An error occured while searching for workspaces'});
         }
       });
     }
