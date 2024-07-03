@@ -32,8 +32,7 @@
       <td>
         <p-button
           label={{rowData.name}}
-          [text]="true"
-          [plain]="true"
+          [link]="true"
           [routerLink]="['/workspaces', rowData.id, 'fs']" 
           [routerLinkActiveOptions]="{ exact: true }"
           [routerLinkActive]="['router-link-active']"
