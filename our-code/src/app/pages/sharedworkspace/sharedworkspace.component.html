@@ -29,10 +29,16 @@
   </ng-template>
   <ng-template pTemplate="body" let-rowNode let-rowData="rowData">
     <tr [ttRow]="rowNode">
-      <td *ngFor="let col of cols; let i = index; let last = last">
-        <p-treeTableToggler [rowNode]="rowNode" *ngIf="i === 0"></p-treeTableToggler>
-        <span>{{ rowData[col.field] }}</span>
+      <td>
+        <p-button
+          label={{rowData.name}}
+          [link]="true"
+          [routerLink]="['/workspaces', rowData.id, 'fs']" 
+          [routerLinkActiveOptions]="{ exact: true }"
+          [routerLinkActive]="['router-link-active']"
+        />
       </td>
+      <td>{{ rowData.owner }}</td>
     </tr> 
   </ng-template>
 </p-treeTable>
