@@ -185,3 +185,61 @@ export const deleteFolder = async (folderId: number) => {
   });
   return folder;
 };
+
+/**
+ * Return true if the user has permissions for the file with the given id
+ * @param fileId the id of the file
+ * @param userId the id of the user
+ */
+export const hasPermsForFile = async ( fileId: number, userId: number) => {
+  const file = await db.file.findUnique({
+    where: {
+      id: fileId,
+    },
+    include: {
+      workspace: {
+        include: {
+          sharedUsers: true,
+        },
+      }, 
+    },
+  });
+  return file?.workspace.userId === userId || file?.workspace.sharedUsers.find((user) => user.userId === userId);
+} 
+
+export const getFileContent = async (fileId: number) => {
+  const file = await db.file.findUnique({
+    where: {
+      id: fileId,
+    },
+  });
+  return file?.content;
+};
+
+export const getFileComments = async (fileId: number) => {
+  const file = await db.file.findUnique({
+    where: {
+      id: fileId,
+    },
+    include: {
+      comments: {
+        include: {
+          user: true,
+        },
+      },
+    },
+  });
+  return file?.comments;
+}
+
+export const writeToFile = async (fileId: number, content: string) => {
+  const file = await db.file.update({
+    where: {
+      id: fileId,
+    },
+    data: {
+      content: content,
+    },
+  });
+  return file;
+};

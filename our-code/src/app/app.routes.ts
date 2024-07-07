@@ -4,6 +4,7 @@ import { WorkspacesComponent } from './pages/workspaces/workspaces.component';
 import { FileSysComponent } from './pages/file-sys/file-sys.component';
 import { SharedWorkspaceComponent } from './pages/sharedworkspace/sharedworkspace.component';
 import { AuthGuard } from './guards/auth.guards';
+import { FileComponent } from './pages/file/file.component';
 
 export const routes: Routes = [
   {
@@ -23,6 +24,11 @@ export const routes: Routes = [
   {
     path: 'sharedworkspace',
     component: SharedWorkspaceComponent,
+    canActivate: [AuthGuard]
+  },
+  {
+    path: 'file/:id/edit',
+    component: FileComponent,
     canActivate: [AuthGuard]
   },
   {

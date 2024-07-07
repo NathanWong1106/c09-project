@@ -1,0 +1,22 @@
+@if(hasPerms) {
+<p-splitter
+  [style]="{ height: '95vh' }"
+  [panelSizes]="[70, 30]"
+  [minSizes]="[50, 25]"
+  layout="vertical"
+>
+  <ng-template pTemplate>
+    <div class="h-full w-full">
+      <ngx-monaco-editor
+        [options]="editorOptions"
+        [(ngModel)]="code"
+        class="h-full w-full"
+        (onInit)="onEditorInit($event)"
+      ></ngx-monaco-editor>
+    </div>
+  </ng-template>
+  <ng-template pTemplate>
+    <div>Output from Judge0</div>
+  </ng-template>
+</p-splitter>
+}
