@@ -28,7 +28,7 @@ export class FileSyncService {
       applyUpdate(this.doc, updateArr);
     });
     this.doc.on('update', () => {
-      this.socket.emit('file-edit', encodeStateAsUpdate(this.doc), "hello");
+      this.socket.emit('file-edit', encodeStateAsUpdate(this.doc));
     });
   }
 
