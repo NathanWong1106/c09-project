@@ -74,6 +74,7 @@ export class FileSysComponent implements OnInit {
     this.cols = [
       { field: 'name', header: 'Name' },
       { field: 'type', header: 'Type' },
+      { field: '', header: '' }
     ];
 
     this.createFileFormGroup = new FormGroup({
