@@ -231,3 +231,15 @@ export const getFileComments = async (fileId: number) => {
   });
   return file?.comments;
 }
+
+export const writeToFile = async (fileId: number, content: string) => {
+  const file = await db.file.update({
+    where: {
+      id: fileId,
+    },
+    data: {
+      content: content,
+    },
+  });
+  return file;
+};
