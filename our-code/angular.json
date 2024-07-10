@@ -11,11 +11,11 @@
       "prefix": "app",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-angular:application",
+          "builder": "@angular-builders/custom-webpack:browser",
           "options": {
+            "main": "src/main.ts",
             "outputPath": "dist/our-code",
             "index": "src/index.html",
-            "browser": "src/main.ts",
             "polyfills": ["zone.js"],
             "tsConfig": "tsconfig.app.json",
             "assets": [
@@ -31,15 +31,21 @@
               "node_modules/primeicons/primeicons.css",
               "node_modules/primeng/resources/primeng.min.css"
             ],
-            "scripts": []
+            "scripts": [],
+            "customWebpackConfig": {
+              "path": "./webpack.config.js",
+              "mergeRules": {
+                "externals": "replace"
+              }
+            }
           },
           "configurations": {
             "production": {
               "budgets": [
                 {
                   "type": "initial",
-                  "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumWarning": "5MB",
+                  "maximumError": "7MB"
                 },
                 {
                   "type": "anyComponentStyle",
@@ -51,14 +57,24 @@
             },
             "development": {
               "optimization": false,
+              "buildOptimizer": false,
               "extractLicenses": false,
-              "sourceMap": true
+              "sourceMap": false,
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.development.ts"
+                }
+              ]
             }
           },
           "defaultConfiguration": "production"
         },
         "serve": {
-          "builder": "@angular-devkit/build-angular:dev-server",
+          "builder": "@angular-builders/custom-webpack:dev-server",
+          "options": {
+            "browserTarget": "our-code:build"
+          },
           "configurations": {
             "production": {
               "buildTarget": "our-code:build:production"

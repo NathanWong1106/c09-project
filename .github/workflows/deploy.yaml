@@ -1,0 +1,56 @@
+name: Deploy to VM
+
+# Only trigger when backend or frontend builds succeed
+on:
+  workflow_run:
+    workflows: ["Publish Backend to GHCR", "Publish Frontend to GHCR"]
+    types:
+      - completed
+
+jobs:
+    deploy:
+      name: Deploy to VM  
+      runs-on: ubuntu-latest
+      steps:
+        - name: Checkout
+          uses: actions/checkout@v2
+
+        - name: Copy compose.prod.yml
+          uses: appleboy/scp-action@v0.1.7
+          with: 
+            host: "ourcode.tech"
+            username: ${{ secrets.SSH_USER }}
+            key: ${{ secrets.SSH_KEY }}
+            source: "compose.prod.yml"
+            target: "/usr/src/app"
+
+        - name: Deploy
+          uses: appleboy/ssh-action@v1.0.3
+          env:
+            GOOGLE_CLIENT_SECRET: ${{ secrets.GOOGLE_CLIENT_SECRET }}
+          with:
+            host: "ourcode.tech"
+            username: ${{ secrets.SSH_USER }}
+            key: ${{ secrets.SSH_KEY }}
+            script: |
+              # Go to the app folder
+              cd /usr/src/app
+              # Login to GHCR with docker
+              echo "${{ secrets.CR_PAT }}" | docker login ghcr.io -u NathanWong1106 --password-stdin
+              # Set the environment variables
+              export GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+              # Pull the latest images
+              docker compose -f compose.prod.yml -p our-code-prod pull  
+              # Stop the current containers
+              docker compose -f compose.prod.yml -p our-code-prod down
+              # Start the containers
+              docker compose -f compose.prod.yml -p our-code-prod up -d
+              
+
+
+
+              
+              
+
+
+        

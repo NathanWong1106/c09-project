@@ -6,9 +6,11 @@
   "scripts": {
     "start": "ts-node app.ts",
     "dev:dbpush": "prisma db push",
+    "dev:migrate": "prisma migrate dev --skip-seed",
     "dev": "prisma generate && nodemon app.ts",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "seed": "npx ts-node --esm --transpile-only ./prisma/seed.ts"
+    "seed": "npx ts-node --esm --transpile-only ./prisma/seed.ts",
+    "prod": "npx prisma migrate deploy && npx prisma generate && npm run start"
   },
   "prisma": {
     "seed": "ts-node prisma/seed.ts"

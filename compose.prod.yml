@@ -1,0 +1,70 @@
+services:
+  nginx-proxy:
+    image: jwilder/nginx-proxy
+    container_name: nginx-proxy
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/tmp/docker.sock:ro
+      - ./certs:/etc/nginx/certs
+      - ./vhost:/etc/nginx/vhost.d
+      - ./html:/usr/share/nginx/html
+    labels:
+      - com.github.nginx-proxy.nginx
+  nginx-proxy-acme:
+    image: nginxproxy/acme-companion
+    container_name: nginx-proxy-acme
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./certs:/etc/nginx/certs
+      - ./vhost:/etc/nginx/vhost.d
+      - ./html:/usr/share/nginx/html
+      - ./acme:/etc/acme.sh
+    environment:
+      - DEFAULT_EMAIL=nwong.dev@gmail.com
+    depends_on:
+      - nginx-proxy
+  client-prod:
+    image: ghcr.io/utsc-cscc09-programming-on-the-web/ourcode-frontend:latest
+    expose:
+      - 80
+    depends_on:
+      - server-prod
+    environment:
+      - VIRTUAL_HOST=ourcode.tech
+      - LETSENCRYPT_HOST=ourcode.tech
+  server-prod:
+    image: ghcr.io/utsc-cscc09-programming-on-the-web/ourcode-backend:latest
+    expose:
+      - 3000
+    depends_on:
+      db-prod:
+        condition: service_healthy
+    environment:
+      - PORT=3000
+      - DATABASE_URL=postgres://ourcode_user:ourcode_password@db-prod:5432/ourcode_db
+      - CLIENT_URL=https://ourcode.tech
+      - GOOGLE_CLIENT_ID=438803231853-qfbvlqkbofpngorac0m4edqup6sqg9r7.apps.googleusercontent.com
+      - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - VIRTUAL_HOST=api.ourcode.tech
+      - LETSENCRYPT_HOST=api.ourcode.tech
+  db-prod:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_DB: ourcode_db
+      POSTGRES_USER: ourcode_user
+      POSTGRES_PASSWORD: ourcode_password
+    volumes:
+      - ./postgres-data-prod:/var/lib/postgresql/data
+    expose:
+      - 5432
+
+    # Solution to the problem of the database not being ready when the server starts
+    # From: https://stackoverflow.com/questions/35069027/docker-wait-for-postgresql-to-be-running
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ourcode_user -d ourcode_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5

@@ -1,6 +1,6 @@
 export const environment = {
-  production: true,
+  production: false,
   googleClientId:
     '438803231853-qfbvlqkbofpngorac0m4edqup6sqg9r7.apps.googleusercontent.com',
-  apiEndpoint: 'https://api.ourcode.tech',
+  apiEndpoint: 'http://localhost:3000', // Change to server:3000 if in docker
 };
