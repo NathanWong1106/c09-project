@@ -16,5 +16,7 @@ You can connect to the services at ports:
 - `3000` for Server
 - `5432` for Postgres
 
-#### TODOS:
-All the dockerfiles and compose files are currently configured for development. When we deploy we need to create new `Dockerfile.prod` and `compose.prod.yaml` files.
+### DB Migrations
+Before making a PR with schema changes please run `npm run dev:migrate` to generate the migration files that will be applied to the production db
+
+Similarly, after pulling updates with schema changes, run `npm run dev:migrate` to apply those migrations to your local dev db
