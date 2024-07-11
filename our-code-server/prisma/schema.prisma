@@ -64,8 +64,6 @@ model File {
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId Int
   comments  Comments[]
-
-  @@unique([name, parentId, workspaceId])
 }
 
 model Comments {
