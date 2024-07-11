@@ -71,5 +71,6 @@ model Comments {
   userId    Int
   file      File     @relation(fields: [fileId], references: [id], onDelete: Cascade)
   fileId    Int
+  relPos    String
   createdAt DateTime @default(now())
 }
