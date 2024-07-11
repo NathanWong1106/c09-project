@@ -21,7 +21,7 @@ app.use(
 );
 
 const sessionMiddleware = session({
-  secret: "keyboard cat",
+  secret: process.env.SESSION_SECRET || "keyboard cat",
   resave: false,
   saveUninitialized: false,
 });
