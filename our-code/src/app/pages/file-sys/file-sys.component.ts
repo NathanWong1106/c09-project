@@ -156,35 +156,37 @@ export class FileSysComponent implements OnInit {
     this.loading = true;
     const node = event.node;
 
-    // This may break with more folders. Need a better way to do getFolderByName
-    this.fileService
-      .getContentForFolder(this.workspaceId, node.data.id)
-      .subscribe({
-        next: (res) => {
-          const items = <{ id: number; name: string; type: string }[]>res;
-          let nodeChildren = [];
-          for (let item of items) {
-            let childNode = {
-              data: {
-                id: item.id,
-                name: item.name,
-                type: item.type,
-              },
-              leaf: item.type === 'file' ? true : false,
-            };
-            nodeChildren.push(childNode);
-          }
-          node.children = nodeChildren;
-          this.files = [...this.files]; // Ensure immutability for change detection
-          this.loading = false;
-          this.cd.markForCheck();
-        },
-        error: (err) => {
-          this.error = err.error.error;
-          this.loading = false;
-          this.cd.markForCheck();
-        },
-      });
+    setTimeout(() => {
+      // This may break with more folders. Need a better way to do getFolderByName
+      this.fileService
+        .getContentForFolder(this.workspaceId, node.data.id)
+        .subscribe({
+          next: (res) => {
+            const items = <{ id: number; name: string; type: string }[]>res;
+            let nodeChildren = [];
+            for (let item of items) {
+              let childNode = {
+                data: {
+                  id: item.id,
+                  name: item.name,
+                  type: item.type,
+                },
+                leaf: item.type === 'file' ? true : false,
+              };
+              nodeChildren.push(childNode);
+            }
+            node.children = nodeChildren;
+            this.files = [...this.files]; // Ensure immutability for change detection
+            this.loading = false;
+            this.cd.markForCheck();
+          },
+          error: (err) => {
+            this.error = err.error.error;
+            this.loading = false;
+            this.cd.markForCheck();
+          },
+        });
+      }, 200);
   }
 
   addItem(name: string, type: string, parentId: number) {

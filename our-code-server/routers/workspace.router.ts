@@ -23,7 +23,7 @@ workspaceRouter.get("/:id", isAuthenticated, async (req, res) => {
     if (
       !(await hasPermsForWorkspace(
         req.session.user!.id,
-        parseInt(req.params.id)
+        workspaceId
       ))
     ) {
       return res.status(403).json({ error: "No permission to view this workspace" });
