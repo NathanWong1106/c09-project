@@ -41,6 +41,10 @@ export class WorkspaceService {
     return this.http.get<{workspace: Workspace[], total: number}>(`${this.endpoint}/api/workspace/search?name=${name}&page=${page}`, { withCredentials: true });
   }
 
+  public findWorkspaceById(id: number) {
+    return this.http.get<Workspace>(`${this.endpoint}/api/workspace/${id}`, { withCredentials: true });
+  }
+
   public editWorkspace(workspaceId: number, name: string) {
     return this.http.patch(`${this.endpoint}/api/workspace/edit/${workspaceId}`, { name }, { withCredentials: true });
   }

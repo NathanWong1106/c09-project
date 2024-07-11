@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getMyWorkspaces, createWorkspace, deleteWorkspace, findWorkspacesByName, editWorkspace } from "../db/workspacedb.util";
+import { getMyWorkspaces, createWorkspace, deleteWorkspace, findWorkspacesByName, editWorkspace, findWorkspaceById } from "../db/workspacedb.util";
 import { isAuthenticated } from "../middleware/auth.middleware";
 
 const workspaceRouter = Router();
@@ -14,6 +14,18 @@ workspaceRouter.get("/", isAuthenticated, (req, res) => {
     })
     .catch((err) => {
       return res.status(500).json({ error: "Failed to get workspaces" });
+    });
+});
+
+workspaceRouter.get("/:id", isAuthenticated, (req, res) => {
+  const workspaceId = parseInt(req.params.id);
+
+  findWorkspaceById(workspaceId)
+    .then((workspace) => {
+      return res.status(200).json(workspace);
+    })
+    .catch((err) => {
+      return res.status(500).json({ error: "Failed to get workspace" });
     });
 });
 

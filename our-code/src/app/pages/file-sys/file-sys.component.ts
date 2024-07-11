@@ -14,12 +14,16 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
+import { MenubarModule } from 'primeng/menubar';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 import {
   Folder,
   File,
 } from '../../shared/services/file-sys/file-sys.interface';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
+import { WorkspaceService } from '../../shared/services/workspace/workspace.service';
 
 interface FileType {
   type: string;
@@ -42,10 +46,11 @@ interface Column {
     DropdownModule,
     ReactiveFormsModule,
     CommonModule,
+    MenubarModule,
   ],
   templateUrl: './file-sys.component.html',
   styleUrl: './file-sys.component.css',
-  providers: [FileService],
+  providers: [FileService, MessageService],
 })
 export class FileSysComponent implements OnInit {
   visible: boolean = false;
@@ -62,12 +67,23 @@ export class FileSysComponent implements OnInit {
 
   constructor(
     private fileService: FileService,
+    private messageService: MessageService,
     private cd: ChangeDetectorRef,
     private activateRoute: ActivatedRoute,
+    private workspaceService: WorkspaceService,
   ) {}
 
   ngOnInit(): void {
     this.workspaceId = this.activateRoute.snapshot.params['id'];
+    this.workspaceService.findWorkspaceById(this.workspaceId).subscribe({
+      next: (res) => {
+        console.log(res);
+        document.querySelector('.workspaceName')!.innerHTML = res.name;
+      },
+      error: (err) => {
+        this.error = err.error.error;
+      },
+    });
 
     this.types = [{ type: 'file' }, { type: 'folder' }];
 
@@ -196,11 +212,12 @@ export class FileSysComponent implements OnInit {
       this.selectedItem && this.selectedItem.node.data.type === 'folder'
         ? this.selectedItem.node.data.id
         : 0;
+    const itemType = this.createFileFormGroup.value.filetype ? this.createFileFormGroup.value.filetype.type : "null";
     this.fileService
       .addItem(
         this.workspaceId,
         this.createFileFormGroup.value.filename,
-        this.createFileFormGroup.value.filetype.type,
+        itemType,
         parentId,
       )
       .subscribe({
@@ -211,6 +228,7 @@ export class FileSysComponent implements OnInit {
           this.createFileFormGroup.reset();
         },
         error: (err) => {
+          console.log(err);
           this.error = err.error.error;
         },
       });
@@ -230,6 +248,6 @@ export class FileSysComponent implements OnInit {
   }
 
   onHide() {
-    // this.selectedItem = null;
+    this.selectedItem = null;
   }
 }

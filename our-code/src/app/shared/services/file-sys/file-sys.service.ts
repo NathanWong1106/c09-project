@@ -36,6 +36,12 @@ export class FileService {
   }
 
   addItem(workspaceId: number, name: string, type: string, parentId: number) {
+    if (!name) {
+      throw new Error('Name is required');
+    }
+    if (type === 'null') {
+      throw new Error('Type is required');
+    }
     return this.http.post(
       this.endpoint + `/api/fs?workspaceId=${workspaceId}&parentId=${parentId}`,
       {
