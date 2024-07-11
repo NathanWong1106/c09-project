@@ -47,10 +47,11 @@ interface Column {
     ReactiveFormsModule,
     CommonModule,
     MenubarModule,
+    ToastModule,
   ],
   templateUrl: './file-sys.component.html',
   styleUrl: './file-sys.component.css',
-  providers: [FileService, MessageService],
+  providers: [FileService,],
 })
 export class FileSysComponent implements OnInit {
   visible: boolean = false;
@@ -77,7 +78,6 @@ export class FileSysComponent implements OnInit {
     this.workspaceId = this.activateRoute.snapshot.params['id'];
     this.workspaceService.findWorkspaceById(this.workspaceId).subscribe({
       next: (res) => {
-        console.log(res);
         document.querySelector('.workspaceName')!.innerHTML = res.name;
       },
       error: (err) => {
@@ -184,15 +184,34 @@ export class FileSysComponent implements OnInit {
   }
 
   addItem(name: string, type: string, parentId: number) {
-    this.fileService.addItem(this.workspaceId, name, type, parentId).subscribe({
-      next: () => {
-        this.loadNodes();
-        this.error = '';
-      },
-      error: (err) => {
-        this.error = err.error.error;
-      },
-    });
+    if (!name) {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Name is required' });
+      return;
+    }
+    if (!type) {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Type is required' });
+      return;
+    }
+    this.fileService
+      .addItem(
+        this.workspaceId,
+        name,
+        type,
+        parentId,
+      )
+      .subscribe({
+        next: () => {
+          this.loadNodes();
+          this.error = '';
+          this.visible = false;
+          this.createFileFormGroup.reset();
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: type + ' added' });
+        },
+        error: (err) => {
+          this.error = err.error.error;
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: this.error });
+        },
+      });
   }
 
   deleteItem(id: number, type: string) {
@@ -212,26 +231,12 @@ export class FileSysComponent implements OnInit {
       this.selectedItem && this.selectedItem.node.data.type === 'folder'
         ? this.selectedItem.node.data.id
         : 0;
-    const itemType = this.createFileFormGroup.value.filetype ? this.createFileFormGroup.value.filetype.type : "null";
-    this.fileService
-      .addItem(
-        this.workspaceId,
-        this.createFileFormGroup.value.filename,
-        itemType,
-        parentId,
-      )
-      .subscribe({
-        next: () => {
-          this.loadNodes();
-          this.error = '';
-          this.visible = false;
-          this.createFileFormGroup.reset();
-        },
-        error: (err) => {
-          console.log(err);
-          this.error = err.error.error;
-        },
-      });
+    const itemType = this.createFileFormGroup.value.filetype ? this.createFileFormGroup.value.filetype.type : null;
+    this.addItem(
+      this.createFileFormGroup.value.filename,
+      itemType,
+      parentId,
+    );
   }
 
   showDialog() {
@@ -242,6 +247,41 @@ export class FileSysComponent implements OnInit {
     // Prevent the default context menu from appearing
     event.preventDefault();
     this.selectedItem = rowData;
+    if (rowData.node.data.type === 'file') {
+      this.menuItems = [
+        {
+          label: 'Delete',
+          icon: 'pi pi-times',
+          command: (event) => {
+            this.deleteItem(
+              this.selectedItem.node.data.id,
+              this.selectedItem.node.data.type,
+            ); // Placeholders
+          },
+        },
+      ]
+    } 
+    else {
+      this.menuItems = [
+        {
+          label: 'Add File or Folder',
+          icon: 'pi pi-plus',
+          command: (event) => {
+            this.showDialog();
+          },
+        },
+        {
+          label: 'Delete',
+          icon: 'pi pi-times',
+          command: (event) => {
+            this.deleteItem(
+              this.selectedItem.node.data.id,
+              this.selectedItem.node.data.type,
+            ); // Placeholders
+          },
+        },
+      ]
+    };
     if (event.button === 2) {
       this.cm.show(event);
     }
