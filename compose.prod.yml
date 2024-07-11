@@ -47,6 +47,7 @@ services:
       - CLIENT_URL=https://ourcode.tech
       - GOOGLE_CLIENT_ID=438803231853-qfbvlqkbofpngorac0m4edqup6sqg9r7.apps.googleusercontent.com
       - GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET}
+      - SESSION_SECRET=${SESSION_SECRET}
       - VIRTUAL_HOST=api.ourcode.tech
       - LETSENCRYPT_HOST=api.ourcode.tech
   db-prod:
