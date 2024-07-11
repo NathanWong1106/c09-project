@@ -27,8 +27,8 @@ fileRouter.get("/", isAuthenticated, async (req, res) => {
   }
   if (
     !(await hasPermsForWorkspace(
-      parseInt(req.query.workspaceId),
-      req.session.user!.id
+      req.session.user!.id,
+      parseInt(req.query.workspaceId)
     ))
   ) {
     return res.status(403).json({ error: "No permission to view this workspace" });
@@ -94,8 +94,8 @@ fileRouter.post("/", isAuthenticated, async (req, res) => {
   }
   if (
     !(await hasPermsForWorkspace(
-      parseInt(req.query.workspaceId),
-      req.session.user!.id
+      req.session.user!.id,
+      parseInt(req.query.workspaceId)
     ))
   ) {
     return res.status(403).json({ error: "No permission to modify this workspace" });
