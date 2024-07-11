@@ -51,8 +51,6 @@ model Folder {
   fileId    Int?
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId Int
-
-  @@unique([name, parentId, workspaceId])
 }
 
 model File {

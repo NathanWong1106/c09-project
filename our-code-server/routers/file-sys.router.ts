@@ -3,10 +3,12 @@ import {
   createFile,
   createFolder,
   getCurrentLevelItems,
-  getFolderByName,
-  getFileByName,
   deleteFile,
   deleteFolder,
+  hasPermsForFile,
+  hasPermsForFolder,
+  getFileById,
+  getFolderById,
 } from "../db/filedb.util";
 import { hasPermsForWorkspace } from "../db/workspacedb.util";
 import { isAuthenticated } from "../middleware/auth.middleware";
@@ -23,14 +25,14 @@ fileRouter.get("/", isAuthenticated, async (req, res) => {
   if (typeof req.query.parentId !== "string") {
     return res.status(400).json({ error: "Parent ID not accepted" });
   }
-  // if (
-  //   !(await hasPermsForWorkspace(
-  //     parseInt(req.query.workspaceId),
-  //     req.session.user!.id
-  //   ))
-  // ) {
-  //   return res.status(403).json({ error: "No permission to view this workspace" });
-  // }
+  if (
+    !(await hasPermsForWorkspace(
+      parseInt(req.query.workspaceId),
+      req.session.user!.id
+    ))
+  ) {
+    return res.status(403).json({ error: "No permission to view this workspace" });
+  }
   const items = await getCurrentLevelItems(
     parseInt(req.query.workspaceId),
     parseInt(req.query.parentId),
@@ -40,33 +42,8 @@ fileRouter.get("/", isAuthenticated, async (req, res) => {
 
 fileRouter.get("/folder", isAuthenticated, async (req, res) => {
   if (
-    typeof req.query.workspaceId !== "string" ||
-    !parseInt(req.query.workspaceId)
-  ) {
-    return res.status(400).json({ error: "Workspace ID not accepted" });
-  }
-  if (typeof req.query.folderName !== "string") {
-    return res.status(400).json({ error: "No name given" });
-  }
-  // if (
-  //   !(await hasPermsForWorkspace(
-  //     parseInt(req.query.workspaceId),
-  //     req.session.user!.id
-  //   ))
-  // ) {
-  //   return res.status(403).json({ error: "No permission to view this workspace" });
-  // }
-  const folder = await getFolderByName(
-    parseInt(req.query.workspaceId),
-    req.query.folderName,
-  );
-  return res.status(200).json(folder);
-});
-
-fileRouter.get("/file", isAuthenticated, async (req, res) => {
-  if (
-    typeof req.query.workspaceId !== "string" ||
-    !parseInt(req.query.workspaceId)
+    typeof req.query.folderId !== "string" ||
+    !parseInt(req.query.folderId)
   ) {
     return res.status(400).json({ error: "Workspace ID not accepted" });
   }
@@ -74,18 +51,35 @@ fileRouter.get("/file", isAuthenticated, async (req, res) => {
     return res.status(400).json({ error: "No name given" });
   }
   if (
-    !(await hasPermsForWorkspace(
-      parseInt(req.query.workspaceId),
+    !(await hasPermsForFolder(
+      parseInt(req.query.folderId),
       req.session.user!.id
     ))
   ) {
     return res.status(403).json({ error: "No permission to view this workspace" });
   }
-  const folder = await getFileByName(
-    parseInt(req.query.workspaceId),
-    req.query.folderName,
+  const folder = await getFolderById(
+    parseInt(req.query.folderId),
   );
   return res.status(200).json(folder);
+});
+
+fileRouter.get("/file", isAuthenticated, async (req, res) => {
+  if (typeof req.query.fileId !== "string" || !parseInt(req.query.fileId)) {
+    return res.status(400).json({ error: "No name given" });
+  }
+  if (
+    !(await hasPermsForFile(
+      parseInt(req.query.fileId),
+      req.session.user!.id
+    ))
+  ) {
+    return res.status(403).json({ error: "No permission to view this workspace" });
+  }
+  const file = await getFileById(
+    parseInt(req.query.fileId),
+  );
+  return res.status(200).json(file);
 });
 
 fileRouter.post("/", isAuthenticated, async (req, res) => {

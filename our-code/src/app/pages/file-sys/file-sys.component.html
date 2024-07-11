@@ -6,15 +6,11 @@
 <p-menubar>
   <ng-template pTemplate="start" class="flex">
     <div class="flex">
-      <h2 class="workspaceName"></h2>
+      <h2 [innerHTML]="workspaceName"></h2>
     </div>
   </ng-template>
   <ng-template pTemplate="end">
     <div class="flex">
-      <!-- <div class="p-input-icon-left mr-4">
-        <i class="pi pi-search"></i>
-        <input type="text" pInputText placeholder="Search files..." [(ngModel)]="searchTerm" />
-      </div> -->
       <p-button
         icon="pi pi-plus"
         label="Create file/folder"

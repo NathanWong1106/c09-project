@@ -65,6 +65,7 @@ export class FileSysComponent implements OnInit {
   cols!: Column[];
   @ViewChild('cm') cm!: ContextMenu;
   selectedItem!: any;
+  workspaceName: string = 'My Workspace';
 
   constructor(
     private fileService: FileService,
@@ -78,7 +79,7 @@ export class FileSysComponent implements OnInit {
     this.workspaceId = this.activateRoute.snapshot.params['id'];
     this.workspaceService.findWorkspaceById(this.workspaceId).subscribe({
       next: (res) => {
-        document.querySelector('.workspaceName')!.innerHTML = res.name;
+        this.workspaceName = res.name;
       },
       error: (err) => {
         this.error = err.error.error;
