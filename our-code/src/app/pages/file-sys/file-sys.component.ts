@@ -215,13 +215,14 @@ export class FileSysComponent implements OnInit {
   }
 
   deleteItem(id: number, type: string) {
-    this.fileService.deleteItem(id, type).subscribe({
+    this.fileService.deleteItem(id, type, this.workspaceId).subscribe({
       next: () => {
         this.loadNodes();
         this.error = '';
       },
       error: (err) => {
         this.error = err.error.error;
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: this.error });
       },
     });
   }
@@ -281,13 +282,14 @@ export class FileSysComponent implements OnInit {
           },
         },
       ]
-    };
+    }
     if (event.button === 2) {
       this.cm.show(event);
+      console.log(this.selectedItem);
     }
   }
 
   onHide() {
-    this.selectedItem = null;
+    // this.selectedItem = null;
   }
 }

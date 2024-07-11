@@ -48,9 +48,9 @@ export class FileService {
     );
   }
 
-  deleteItem(itemId: number, type: string) {
+  deleteItem(itemId: number, type: string, workspaceId: number) {
     return this.http.delete(
-      this.endpoint + `/api/fs?itemId=${itemId}&type=${type}`,
+      this.endpoint + `/api/fs?itemId=${itemId}&type=${type}&workspaceId=${workspaceId}`,
       {
         withCredentials: true,
       },

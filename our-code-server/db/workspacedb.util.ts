@@ -48,6 +48,18 @@ export const deleteWorkspace = async (workspaceId: number) => {
   });
 };
 
+export const hasPermsForWorkspace = async (userId: number, workspaceId: number) => {
+  const workspace = await db.workspace.findUnique({
+    where: {
+      id: workspaceId,
+    },
+    include: {
+      sharedUsers: true,
+    },
+  });
+  return workspace?.userId === userId || workspace?.sharedUsers.find((user) => user.userId === userId);
+};
+
 export const findWorkspacesByName = async (name: string, page: number) => {
   const workspace = await db.$transaction([
     db.workspace.findMany({
