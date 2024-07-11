@@ -26,17 +26,17 @@ workspaceRouter.get("/:id", isAuthenticated, async (req, res) => {
         req.session.user!.id
       ))
     ) {
-      throw res.status(403).json({ error: "No permission to view this workspace" });
+      return res.status(403).json({ error: "No permission to view this workspace" });
     }
     findWorkspaceById(workspaceId)
       .then((workspace) => {
         return res.status(200).json(workspace);
       })
       .catch((err) => {
-        throw res.status(500).json({ error: "Failed to get workspace" });
+        return res.status(500).json({ error: "Failed to get workspace" });
       });
   } catch (err) {
-    return err;
+    return res.status(500).json({ error: "Failed to get workspace" });
   }
 });
 

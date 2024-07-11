@@ -83,17 +83,15 @@ export const findWorkspacesByName = async (name: string, page: number) => {
 }
 
 export const findWorkspaceById = async (id: number) => {
-  const workspace = await db.$transaction([
-    db.workspace.findUnique({
-      where: {
-        id: id,
-      },
-      include: {
-        user: true,
-      },
-    }),
-  ])
-  return workspace[0];
+  const workspace = await db.workspace.findUnique({
+    where: {
+      id: id,
+    },
+    include: {
+      user: true,
+    },
+  });
+  return workspace;
 }
 
 export const editWorkspace = async (workspaceId: number, name: string) => {

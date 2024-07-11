@@ -12,11 +12,12 @@
   <ng-template pTemplate="end">
     <div class="flex">
       <p-button
+        [disabled]="!hasPerms"
         icon="pi pi-plus"
         label="Create file/folder"
         rounded="true"
         [style]="{ 'margin-top': '10px', 'margin-right': '10px' }"
-        (click)="showDialog()"
+        (click)="hasPerms ? showDialog() : null"
       />
     </div>
   </ng-template>

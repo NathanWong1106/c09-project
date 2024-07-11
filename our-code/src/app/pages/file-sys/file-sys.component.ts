@@ -66,6 +66,7 @@ export class FileSysComponent implements OnInit {
   @ViewChild('cm') cm!: ContextMenu;
   selectedItem!: any;
   workspaceName: string = 'My Workspace';
+  hasPerms: boolean = true;
 
   constructor(
     private fileService: FileService,
@@ -84,6 +85,7 @@ export class FileSysComponent implements OnInit {
       error: (err) => {
         this.error = err.error.error;
         this.messageService.add({ severity: 'error', summary: 'Error', detail: this.error });
+        this.hasPerms = false;
       },
     });
 
