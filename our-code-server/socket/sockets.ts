@@ -2,11 +2,14 @@ import { Server, Socket } from "socket.io";
 import { SessionSocket } from "../interfaces/sessions/userSession.interface";
 import {
   getFileContent,
+  getYDocFromFile,
   hasPermsForFile,
+  saveYDocToFile,
   writeToFile,
 } from "../db/filedb.util";
 import { createComment, deleteComment, getCommentsForFile } from "../db/commentdb.util";
 import { applyUpdate, Doc, encodeStateAsUpdate } from "yjs";
+import { fromUint8Array, toUint8Array } from "js-base64";
 
 export class YjsFileSocket {
   private documents: Map<string, Doc> = new Map();
@@ -74,17 +77,20 @@ export class YjsFileSocket {
 
     // When a user leaves a room, check if the room is empty
     // If it is, save the document to the database and destroy it in memory
-    this.io.of("/").adapter.on("leave-room", (fileId, _) => {
+    this.io.of("/").adapter.on("leave-room", async (fileId, _) => {
       // If no one is left in the room, save the document to the database and destroy it in memory
       if (this.io.sockets.adapter.rooms.get(fileId)?.size === 0) {
         const doc = this.documents.get(fileId);
 
         if (doc) {
-          const text = doc.getText("content");
-          const content = text.toString();
+          // const text = doc.getText("content");
+          // const content = text.toString();
 
           // Save the document to the database
-          writeToFile(parseInt(fileId), content);
+          // writeToFile(parseInt(fileId), content);
+          const docState = encodeStateAsUpdate(doc);
+          const base64Encoded = fromUint8Array(docState);
+          await saveYDocToFile(parseInt(fileId), base64Encoded);
 
           // Destroy the document in memory
           doc.destroy();
@@ -127,9 +133,20 @@ export class YjsFileSocket {
    */
   private async getOrCreateDoc(fileId: string): Promise<Doc> {
     if (!this.documents.has(fileId)) {
-      // Create a new document and initialize it with the file's content
+      // Grab a document from store or initialize a new one
+      const docBuffer = await getYDocFromFile(parseInt(fileId))
+
+      let update: Uint8Array | null =  null;
+      if (docBuffer) {
+        update = toUint8Array(docBuffer);
+      }
+
       const doc = new Doc();
-      await this.initDoc(doc, fileId);
+      if (update) {
+        applyUpdate(doc, update);
+      } else {
+        this.initDoc(doc, fileId);
+      }
 
       // Store the document in memory
       this.documents.set(fileId, doc);

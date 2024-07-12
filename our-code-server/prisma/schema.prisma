@@ -61,6 +61,7 @@ model File {
   parentId  Int?
   workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   workspaceId Int
+  ydoc      String?
   comments  Comments[]
 }
 

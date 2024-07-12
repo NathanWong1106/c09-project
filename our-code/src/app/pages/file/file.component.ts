@@ -65,7 +65,6 @@ export class FileComponent implements OnInit, OnDestroy {
     // this.currentOffset = this.getOffset(pos.lineNumber, this.fileSyncService.doc.getText('content').toString())
     this.currentOffset = ed.getModel().getOffsetAt(pos);
     this.relPos =  this.fileSyncService.createRelativePosFromMonacoPos(ed, ed.getModel());
-    console.log(this.relPos)
   }
 
   onEditorInit(editor: any) {
@@ -75,6 +74,7 @@ export class FileComponent implements OnInit, OnDestroy {
       new Set([editor]),
     )
 
+    this.loadComments(editor);
     const commentArray = this.fileSyncService.doc.getArray('comments')
     commentArray.observe(() => {
       if (!this.firstUpdate) {
@@ -120,7 +120,6 @@ export class FileComponent implements OnInit, OnDestroy {
 
       editor.addOverlayWidget(overlayWidget);
       let absPos = this.fileSyncService.createMonacoPosFromRelativePos(editor, comment.relPos);
-      console.log(absPos)
 
       let viewZoneId: number | null = null;
       editor.changeViewZones((changeAccessor: any) => {

@@ -79,7 +79,6 @@ export class FileSyncService {
    * @returns 
    */
   public createMonacoPosFromRelativePos(editor: any, relPos: any) {
-    console.log(editor.getModel().getValue())
     const decodedRelPos = JSON.parse(relPos)
     const absPos = createAbsolutePositionFromRelativePosition(decodedRelPos, this.doc)
     if (absPos !== null && absPos.type === this.doc.getText('content')) {

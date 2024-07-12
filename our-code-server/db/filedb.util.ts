@@ -227,3 +227,26 @@ export const writeToFile = async (fileId: number, content: string) => {
   });
   return file;
 };
+
+export const saveYDocToFile = async (fileId: number, doc: any) => {
+  const file = await db.file.update({
+    where: {
+      id: fileId,
+    },
+    data: {
+      ydoc: doc,
+    },
+  });
+}
+
+export const getYDocFromFile = async (fileId: number) => {
+  const ydoc = await db.file.findUnique({
+    where: {
+      id: fileId
+    },
+    select: {
+      ydoc: true
+    }
+  })
+  return ydoc?.ydoc;
+}
