@@ -39,6 +39,7 @@ jobs:
               echo "${{ secrets.CR_PAT }}" | docker login ghcr.io -u NathanWong1106 --password-stdin
               # Set the environment variables
               export GOOGLE_CLIENT_SECRET=${{ secrets.GOOGLE_CLIENT_SECRET }}
+              export SESSION_SECRET=${{ secrets.SESSION_SECRET }}
               # Pull the latest images
               docker compose -f compose.prod.yml -p our-code-prod pull  
               # Stop the current containers

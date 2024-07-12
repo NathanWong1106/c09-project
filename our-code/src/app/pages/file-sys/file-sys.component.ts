@@ -14,12 +14,16 @@ import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { DropdownModule } from 'primeng/dropdown';
 import { InputTextModule } from 'primeng/inputtext';
 import { DialogModule } from 'primeng/dialog';
+import { MenubarModule } from 'primeng/menubar';
+import { MessageService } from 'primeng/api';
+import { ToastModule } from 'primeng/toast';
 import {
   Folder,
   File,
 } from '../../shared/services/file-sys/file-sys.interface';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
+import { WorkspaceService } from '../../shared/services/workspace/workspace.service';
 
 interface FileType {
   type: string;
@@ -42,10 +46,12 @@ interface Column {
     DropdownModule,
     ReactiveFormsModule,
     CommonModule,
+    MenubarModule,
+    ToastModule,
   ],
   templateUrl: './file-sys.component.html',
   styleUrl: './file-sys.component.css',
-  providers: [FileService],
+  providers: [FileService,],
 })
 export class FileSysComponent implements OnInit {
   visible: boolean = false;
@@ -59,15 +65,29 @@ export class FileSysComponent implements OnInit {
   cols!: Column[];
   @ViewChild('cm') cm!: ContextMenu;
   selectedItem!: any;
+  workspaceName: string = 'My Workspace';
+  hasPerms: boolean = true;
 
   constructor(
     private fileService: FileService,
+    private messageService: MessageService,
     private cd: ChangeDetectorRef,
     private activateRoute: ActivatedRoute,
+    private workspaceService: WorkspaceService,
   ) {}
 
   ngOnInit(): void {
     this.workspaceId = this.activateRoute.snapshot.params['id'];
+    this.workspaceService.findWorkspaceById(this.workspaceId).subscribe({
+      next: (res) => {
+        this.workspaceName = res.name;
+      },
+      error: (err) => {
+        this.error = err.error.error;
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: this.error });
+        this.hasPerms = false;
+      },
+    });
 
     this.types = [{ type: 'file' }, { type: 'folder' }];
 
@@ -136,57 +156,79 @@ export class FileSysComponent implements OnInit {
     this.loading = true;
     const node = event.node;
 
-    // This may break with more folders. Need a better way to do getFolderByName
+    setTimeout(() => {
+      // This may break with more folders. Need a better way to do getFolderByName
+      this.fileService
+        .getContentForFolder(this.workspaceId, node.data.id)
+        .subscribe({
+          next: (res) => {
+            const items = <{ id: number; name: string; type: string }[]>res;
+            let nodeChildren = [];
+            for (let item of items) {
+              let childNode = {
+                data: {
+                  id: item.id,
+                  name: item.name,
+                  type: item.type,
+                },
+                leaf: item.type === 'file' ? true : false,
+              };
+              nodeChildren.push(childNode);
+            }
+            node.children = nodeChildren;
+            this.files = [...this.files]; // Ensure immutability for change detection
+            this.loading = false;
+            this.cd.markForCheck();
+          },
+          error: (err) => {
+            this.error = err.error.error;
+            this.loading = false;
+            this.cd.markForCheck();
+          },
+        });
+      }, 200);
+  }
+
+  addItem(name: string, type: string, parentId: number) {
+    if (!name) {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Name is required' });
+      return;
+    }
+    if (!type) {
+      this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Type is required' });
+      return;
+    }
     this.fileService
-      .getContentForFolder(this.workspaceId, node.data.id)
+      .addItem(
+        this.workspaceId,
+        name,
+        type,
+        parentId,
+      )
       .subscribe({
-        next: (res) => {
-          const items = <{ id: number; name: string; type: string }[]>res;
-          let nodeChildren = [];
-          for (let item of items) {
-            let childNode = {
-              data: {
-                id: item.id,
-                name: item.name,
-                type: item.type,
-              },
-              leaf: item.type === 'file' ? true : false,
-            };
-            nodeChildren.push(childNode);
-          }
-          node.children = nodeChildren;
-          this.files = [...this.files]; // Ensure immutability for change detection
-          this.loading = false;
-          this.cd.markForCheck();
+        next: () => {
+          this.loadNodes();
+          this.error = '';
+          this.visible = false;
+          this.createFileFormGroup.reset();
+          this.messageService.add({ severity: 'success', summary: 'Success', detail: type + ' added' });
         },
         error: (err) => {
           this.error = err.error.error;
-          this.loading = false;
-          this.cd.markForCheck();
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: this.error });
         },
       });
   }
 
-  addItem(name: string, type: string, parentId: number) {
-    this.fileService.addItem(this.workspaceId, name, type, parentId).subscribe({
-      next: () => {
-        this.loadNodes();
-        this.error = '';
-      },
-      error: (err) => {
-        this.error = err.error.error;
-      },
-    });
-  }
-
   deleteItem(id: number, type: string) {
-    this.fileService.deleteItem(id, type).subscribe({
+    this.fileService.deleteItem(id, type, this.workspaceId).subscribe({
       next: () => {
         this.loadNodes();
         this.error = '';
       },
       error: (err) => {
         this.error = err.error.error;
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: this.error });
       },
     });
   }
@@ -196,24 +238,12 @@ export class FileSysComponent implements OnInit {
       this.selectedItem && this.selectedItem.node.data.type === 'folder'
         ? this.selectedItem.node.data.id
         : 0;
-    this.fileService
-      .addItem(
-        this.workspaceId,
-        this.createFileFormGroup.value.filename,
-        this.createFileFormGroup.value.filetype.type,
-        parentId,
-      )
-      .subscribe({
-        next: () => {
-          this.loadNodes();
-          this.error = '';
-          this.visible = false;
-          this.createFileFormGroup.reset();
-        },
-        error: (err) => {
-          this.error = err.error.error;
-        },
-      });
+    const itemType = this.createFileFormGroup.value.filetype ? this.createFileFormGroup.value.filetype.type : null;
+    this.addItem(
+      this.createFileFormGroup.value.filename,
+      itemType,
+      parentId,
+    );
   }
 
   showDialog() {
@@ -224,6 +254,41 @@ export class FileSysComponent implements OnInit {
     // Prevent the default context menu from appearing
     event.preventDefault();
     this.selectedItem = rowData;
+    if (rowData.node.data.type === 'file') {
+      this.menuItems = [
+        {
+          label: 'Delete',
+          icon: 'pi pi-times',
+          command: (event) => {
+            this.deleteItem(
+              this.selectedItem.node.data.id,
+              this.selectedItem.node.data.type,
+            ); // Placeholders
+          },
+        },
+      ]
+    } 
+    else {
+      this.menuItems = [
+        {
+          label: 'Add File or Folder',
+          icon: 'pi pi-plus',
+          command: (event) => {
+            this.showDialog();
+          },
+        },
+        {
+          label: 'Delete',
+          icon: 'pi pi-times',
+          command: (event) => {
+            this.deleteItem(
+              this.selectedItem.node.data.id,
+              this.selectedItem.node.data.type,
+            ); // Placeholders
+          },
+        },
+      ]
+    }
     if (event.button === 2) {
       this.cm.show(event);
     }

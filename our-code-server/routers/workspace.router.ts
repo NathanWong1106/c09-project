@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { getMyWorkspaces, createWorkspace, deleteWorkspace, findWorkspacesByName, editWorkspace } from "../db/workspacedb.util";
+import { getMyWorkspaces, createWorkspace, deleteWorkspace, findWorkspacesByName, editWorkspace, findWorkspaceById, hasPermsForWorkspace } from "../db/workspacedb.util";
 import { isAuthenticated } from "../middleware/auth.middleware";
 
 const workspaceRouter = Router();
@@ -15,6 +15,29 @@ workspaceRouter.get("/", isAuthenticated, (req, res) => {
     .catch((err) => {
       return res.status(500).json({ error: "Failed to get workspaces" });
     });
+});
+
+workspaceRouter.get("/:id", isAuthenticated, async (req, res) => {
+  try {
+    const workspaceId = parseInt(req.params.id);
+    if (
+      !(await hasPermsForWorkspace(
+        req.session.user!.id,
+        workspaceId
+      ))
+    ) {
+      return res.status(403).json({ error: "No permission to view this workspace" });
+    }
+    findWorkspaceById(workspaceId)
+      .then((workspace) => {
+        return res.status(200).json(workspace);
+      })
+      .catch((err) => {
+        return res.status(500).json({ error: "Failed to get workspace" });
+      });
+  } catch (err) {
+    return res.status(500).json({ error: "Failed to get workspace" });
+  }
 });
 
 workspaceRouter.post("/", isAuthenticated, (req, res) => {
