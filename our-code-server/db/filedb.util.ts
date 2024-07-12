@@ -150,7 +150,7 @@ export const getFolderByName = async (workspaceId: number, name: string) => {
 };
 
 export const getFileById = async (fileId: number) => {
-  const file = await db.folder.findUnique({
+  const file = await db.file.findUnique({
     where: {
       id: fileId,
     },
@@ -205,6 +205,22 @@ export const hasPermsForFile = async ( fileId: number, userId: number) => {
     },
   });
   return file?.workspace.userId === userId || file?.workspace.sharedUsers.find((user) => user.userId === userId);
+} 
+
+export const hasPermsForFolder = async ( folderId: number, userId: number) => {
+  const folder = await db.folder.findUnique({
+    where: {
+      id: folderId,
+    },
+    include: {
+      workspace: {
+        include: {
+          sharedUsers: true,
+        },
+      }, 
+    },
+  });
+  return folder?.workspace.userId === userId || folder?.workspace.sharedUsers.find((user) => user.userId === userId);
 } 
 
 export const getFileContent = async (fileId: number) => {
