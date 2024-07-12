@@ -1,11 +1,11 @@
 import { Server, Socket } from "socket.io";
 import { SessionSocket } from "../interfaces/sessions/userSession.interface";
 import {
-  getFileComments,
   getFileContent,
   hasPermsForFile,
   writeToFile,
 } from "../db/filedb.util";
+import { createComment, deleteComment, getCommentsForFile } from "../db/commentdb.util";
 import { applyUpdate, Doc, encodeStateAsUpdate } from "yjs";
 
 export class YjsFileSocket {
@@ -48,6 +48,28 @@ export class YjsFileSocket {
         socket.leave(fileId);
         socket.removeAllListeners("file-edit");
       });
+
+      socket.on("create-comment", async (content: string, relPos: string, fileId: string) => {
+        if (
+          await hasPermsForFile(
+            parseInt(fileId), 
+            (socket as SessionSocket).request.session?.user.id
+          )
+        ) {
+          this.createComment(content, relPos, (socket as SessionSocket).request.session?.user.id, parseInt(fileId));
+        }
+      });
+
+      socket.on("delete-comment", async (commentId: number, fileId: string) => {
+        if (
+          await hasPermsForFile(
+            parseInt(fileId), 
+            (socket as SessionSocket).request.session?.user.id
+          )
+        ) {
+          this.deleteComment(commentId, parseInt(fileId));
+        }
+      });
     });
 
     // When a user leaves a room, check if the room is empty
@@ -60,9 +82,6 @@ export class YjsFileSocket {
         if (doc) {
           const text = doc.getText("content");
           const content = text.toString();
-
-          // TODO: Save comments to the database
-          const comments = doc.getArray("comments");
 
           // Save the document to the database
           writeToFile(parseInt(fileId), content);
@@ -123,16 +142,53 @@ export class YjsFileSocket {
     return this.documents.get(fileId)!;
   }
 
+  /**
+   * Create a comment for the given file
+   * @param content the content of the comment
+   * @param relPos the relative position of the comment
+   * @param userId the id of the user creating the comment
+   * @param fileId the id of the file the comment is on
+   */
+  private async createComment(content: string, relPos: string, userId:number, fileId: number) {
+    const doc = this.documents.get(fileId.toString());
+    if (!doc) {
+      return;
+    }
+
+    // Save the comment to the database
+    let commentId = await createComment(content, relPos, userId, fileId);
+
+    const comments = doc.getArray("comments");
+    comments.push([{ content, relPos, userId, id: commentId}]);
+  }
+
+  /**
+   * Delete a comment for the given file
+   * @param commentId the id of the comment to delete
+   * @param fileId the id of the file the comment is on
+   */
+  private async deleteComment(commentId: number, fileId: number) {
+    const doc = this.documents.get(fileId.toString());
+    if (!doc) {
+      return;
+    }
+
+    // Delete the comment from the database
+    await deleteComment(commentId);
+
+    const comments = doc.getArray("comments");
+    const commentIndex = comments.toArray().findIndex((comment: any) => comment.id === commentId);
+    if (commentIndex !== -1) {
+      comments.delete(commentIndex, 1);
+    }
+  }
+
   private async initDoc(doc: Doc, fileId: string): Promise<void> {
     const text = doc.getText("content");
     const comments = doc.getArray("comments");
     text.insert(0, (await getFileContent(parseInt(fileId))) ?? "");
 
     // TODO: Initialize comments with defined interface
-    comments.push((await getFileComments(parseInt(fileId))) ?? []);
+    comments.push((await getCommentsForFile(parseInt(fileId))) ?? []);
   }
 }
-
-export const setupIo = (io: Server) => {
-  new YjsFileSocket(io).init();
-};

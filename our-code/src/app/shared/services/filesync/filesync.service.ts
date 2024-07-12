@@ -24,7 +24,6 @@ export class FileSyncService {
   public joinFile(fileId: string) {
     this.socket.emit('join-file', fileId);
     this.socket.on('file-update', (update: Uint8Array) => {
-      console.log('file-update');
       const updateArr = new Uint8Array(update);
       applyUpdate(this.doc, updateArr);
     });
@@ -34,16 +33,42 @@ export class FileSyncService {
   }
 
   /**
+   * Create a comment for the given file
+   * @param content the content of the comment
+   * @param offset the offset of the comment
+   * @param userId the id of the user creating the comment
+   * @param fileId the id of the file the comment is on
+   */
+  public createComment(content: string, offset: any, fileId: string) {
+    const relPos = this.addRelativePosition(offset);
+    this.socket.emit('create-comment', content, relPos, fileId);
+  }
+
+  /**
+   * Delete a comment for the given file
+   * @param commentId the id of the comment
+   */
+  public deleteComment(commentId: number, fileId: string) {
+    this.socket.emit('delete-comment', commentId, fileId);
+  }
+
+  /**
+   * Get comments for the given file
+   * @param fileId the id of the file
+   */
+  public getComments(fileId: number) {
+    this.socket.emit('get-comments', fileId);
+  }
+
+  /**
    * create a relative position for a comment
    * 
    * @param offset the offset of the comment
+   * @returns the string encoded relative position
    */
   public addRelativePosition(offset: any) {
-    console.log(this.doc.getText('content'));
     let relativePos = createRelativePositionFromTypeIndex(this.doc.getText('content'), offset);
-    console.log(relativePos);
     const encodedRelPos = JSON.stringify(relativePos);
-    console.log(encodedRelPos);
     return encodedRelPos;
   }
 
@@ -51,11 +76,11 @@ export class FileSyncService {
    * decode a relative position for a comment
    * 
    * @param encodedRelPos the encoded relative position
+   * @returns the absolute position
    */
   public decodeRelativePosition(encodedRelPos: any,) {
     const parsedRelPos = JSON.parse(encodedRelPos);
     const absPos = createAbsolutePositionFromRelativePosition(parsedRelPos, this.doc);
-    console.log(absPos);
     return absPos;
   }
 

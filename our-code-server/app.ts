@@ -8,7 +8,7 @@ import fileRouter from "./routers/file-sys.router";
 import session from "express-session";
 import http from "http";
 import { Server } from "socket.io";
-import { setupIo } from "./socket/sockets";
+import { YjsFileSocket } from "./socket/sockets";
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -19,6 +19,14 @@ app.use(
     credentials: true,
   })
 );
+
+declare global {
+  namespace Express {
+    interface Request {
+      io: YjsFileSocket;
+    }
+  }
+}
 
 const sessionMiddleware = session({
   secret: "keyboard cat",
@@ -40,7 +48,8 @@ io.use((socket, next) => {
   sessionMiddleware(socket.request as express.Request, {} as any, next as NextFunction);
 });
 
-setupIo(io);
+const fileSocket = new YjsFileSocket(io);
+fileSocket.init();
 
 const PORT = process.env.PORT || 3000;
 
@@ -48,6 +57,11 @@ app.use("/auth", authRouter);
 app.use("/api/workspace", workspaceRouter);
 app.use("/api/sharedworkspace", sharedWorkspaceRouter);
 app.use("/api/fs", fileRouter);
+
+app.use(function (req, res, next) {
+  req.io = fileSocket;
+  next();
+});
 
 httpServer.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

@@ -14,6 +14,24 @@
         (onInit)="onEditorInit($event)"
       ></ngx-monaco-editor>
     </div>
+    <p-dialog
+      header="Add Comment"
+      [modal]="true"
+      [(visible)]="visibleCreateComments">
+      <div class="flex align-items-center gap-3 mb-5">
+        <label for="comment">Comment</label>          
+        <input
+          id="comment"
+          type="text"
+          pInputText
+          [(ngModel)]="comment"
+        />
+      </div>
+      <p-button
+        label="Add"
+        class="mr-2"
+        (click)="addComment(comment)"/>
+    </p-dialog>
   </ng-template>
   <ng-template pTemplate>
     <div>Output from Judge0</div>
