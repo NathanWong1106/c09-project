@@ -48,7 +48,7 @@ export class FileComponent implements OnInit, OnDestroy {
     private fileSyncService: FileSyncService,
     private activatedRoute: ActivatedRoute,
     private messageService: MessageService,
-    private ngZone: NgZone
+    private ngZone: NgZone,
     private fileService: FileService
   ) {}
 
