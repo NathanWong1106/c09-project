@@ -39,9 +39,9 @@ export class FileSyncService {
    * @param userId the id of the user creating the comment
    * @param fileId the id of the file the comment is on
    */
-  public createComment(content: string, offset: any, fileId: string) {
-    const relPos = this.addRelativePosition(offset);
-    this.socket.emit('create-comment', content, relPos, fileId);
+  public createComment(content: string, relPos: any, fileId: string) {
+    const encodedRelPos = JSON.stringify(relPos)
+    this.socket.emit('create-comment', content, encodedRelPos, fileId);
   }
 
   /**
@@ -61,27 +61,33 @@ export class FileSyncService {
   }
 
   /**
-   * create a relative position for a comment
-   * 
-   * @param offset the offset of the comment
-   * @returns the string encoded relative position
+   * @param {monaco.editor.IStandaloneCodeEditor} editor
+   * @param {monaco.editor.ITextModel} monacoModel
+   * @param {Y.Text} type
    */
-  public addRelativePosition(offset: any) {
-    let relativePos = createRelativePositionFromTypeIndex(this.doc.getText('content'), offset);
-    const encodedRelPos = JSON.stringify(relativePos);
-    return encodedRelPos;
+  public createRelativePosFromMonacoPos(editor: any, monacoModel: any) {
+    const relPos = createRelativePositionFromTypeIndex(this.doc.getText('content'), monacoModel.getOffsetAt(editor.getPosition()))
+    return relPos
   }
 
   /**
-   * decode a relative position for a comment
    * 
-   * @param encodedRelPos the encoded relative position
-   * @returns the absolute position
+   * @param editor 
+   * @param type 
+   * @param relPos 
+   * @param doc 
+   * @returns 
    */
-  public decodeRelativePosition(encodedRelPos: any,) {
-    const parsedRelPos = JSON.parse(encodedRelPos);
-    const absPos = createAbsolutePositionFromRelativePosition(parsedRelPos, this.doc);
-    return absPos;
+  public createMonacoPosFromRelativePos(editor: any, relPos: any) {
+    console.log(editor.getModel().getValue())
+    const decodedRelPos = JSON.parse(relPos)
+    const absPos = createAbsolutePositionFromRelativePosition(decodedRelPos, this.doc)
+    if (absPos !== null && absPos.type === this.doc.getText('content')) {
+      const model = editor.getModel()
+      const pos = model.getPositionAt(absPos.index)
+      return pos
+    }
+    return null
   }
 
   /**

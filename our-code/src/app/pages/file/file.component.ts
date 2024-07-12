@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { FileSyncService } from '../../shared/services/filesync/filesync.service';
 import { ActivatedRoute } from '@angular/router';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
@@ -35,14 +35,16 @@ export class FileComponent implements OnInit, OnDestroy {
   currentOffset: number = 0;
   visibleCreateComments: boolean = false;
   viewZones: any[] = [];  
+  relPos: any;
   overlays: any[] = [];
-  firstUpdate: boolean = true;
+  firstUpdate: boolean = false;
   monacoLoaded: boolean = false;
 
   constructor(
     private fileSyncService: FileSyncService,
     private activatedRoute: ActivatedRoute,
-    private messageService: MessageService
+    private messageService: MessageService,
+    private ngZone: NgZone
   ) {}
 
   ngOnInit(): void {
@@ -59,9 +61,11 @@ export class FileComponent implements OnInit, OnDestroy {
 
   showCreateComments(ed: any) {
     this.visibleCreateComments = true;
-
     let pos = ed.getPosition();
-    this.currentOffset = this.getOffset(pos.lineNumber, ed.getModel().getValue())
+    // this.currentOffset = this.getOffset(pos.lineNumber, this.fileSyncService.doc.getText('content').toString())
+    this.currentOffset = ed.getModel().getOffsetAt(pos);
+    this.relPos =  this.fileSyncService.createRelativePosFromMonacoPos(ed, ed.getModel());
+    console.log(this.relPos)
   }
 
   onEditorInit(editor: any) {
@@ -71,13 +75,12 @@ export class FileComponent implements OnInit, OnDestroy {
       new Set([editor]),
     )
 
-    this.loadComments(this.binding);
-
     const commentArray = this.fileSyncService.doc.getArray('comments')
     commentArray.observe(() => {
-
-      console.log(this.fileSyncService.doc.getArray('comments').toArray());
-      this.loadComments(this.binding);
+      if (!this.firstUpdate) {
+        this.firstUpdate = true;
+      }
+      this.loadComments(editor);
     });
 
     editor.addAction({
@@ -87,14 +90,13 @@ export class FileComponent implements OnInit, OnDestroy {
       contextMenuGroupId: 'navigation',
       contextMenuOrder: 1,
       
-      run: (ed: any) => this.showCreateComments(ed)
+      run: (ed: any) =>  this.ngZone.run(() => this.showCreateComments(ed))
     });
   }
 
-  loadComments(binding: MonacoBinding) {
+  loadComments(editor: any) {
     const comments = this.fileSyncService.doc.getArray('comments').toArray();
 
-    let editor = binding.editors.values().next().value;
     // Remove all viewZones
     editor.changeViewZones((changeAccessor: any) => {
       for (let i = 0; i < this.viewZones.length; i++) {
@@ -117,15 +119,15 @@ export class FileComponent implements OnInit, OnDestroy {
       };
 
       editor.addOverlayWidget(overlayWidget);
-      let absPos = this.fileSyncService.decodeRelativePosition(comment.relPos);
-      const lineNumber = this.getLine(absPos?.index, this.fileSyncService.doc.getText('content').toString())
+      let absPos = this.fileSyncService.createMonacoPosFromRelativePos(editor, comment.relPos);
+      console.log(absPos)
 
       let viewZoneId: number | null = null;
       editor.changeViewZones((changeAccessor: any) => {
         let domNode = document.createElement('div');
         viewZoneId = changeAccessor.addZone({
-          afterLineNumber: lineNumber,
-          heightInLines: 5,
+          afterLineNumber: absPos.lineNumber,
+          heightInLines: 4,
           domNode: domNode,
           onDomNodeTop: (top: string) => {
             overlayDomNode.style.top = top + 'px';
@@ -151,31 +153,15 @@ export class FileComponent implements OnInit, OnDestroy {
     });    
   }
 
-  getOffset(line: number, text: string) {
-    console.log(text.toString())
-    let lines = text.split('\n');
-    // console.log(line)
-    // console.log(text)
-    // console.log(lines)
-    let offset = 0;
-    for (let i = 0; i < line; i++) {
-      offset += lines[i].length + 1;
-    }
-    return offset;
-  }
-
   getLine(offset: number | undefined, text: string) {
-    console.log(text.toString())
     if (offset === undefined) {
       offset=0;
     }
     let lines = text.split('\n');
     let line = 0;
     let currentOffset = 0;
-    while (currentOffset < offset + 1) {
-      // console.log('currentOffset: ' + currentOffset)
-      // console.log('offset: ' + offset)
-      // console.log('line: ' + line + ' '+ 'lines[line].length: ' + lines[line].length)
+    while (currentOffset < offset) {
+
       currentOffset += lines[line].length + 1;
       line++;
     }
@@ -185,9 +171,10 @@ export class FileComponent implements OnInit, OnDestroy {
   addComment(content: string) {
     let comment = {
       content: content,
-      relPos: this.currentOffset,
+      relPos: this.relPos,
       fileId: this.activatedRoute.snapshot.params['id'],
     }
+
 
     this.fileSyncService.createComment(comment.content, comment.relPos, comment.fileId);
     
@@ -200,15 +187,6 @@ export class FileComponent implements OnInit, OnDestroy {
   }
 
   createCommentElement(comment: any) {
-    /*
-      TODO
-      Delete comments
-
-      fix inline comment modal
-
-      add comment modal
-    */
-
     /**
      * This was the only way :(
      * 

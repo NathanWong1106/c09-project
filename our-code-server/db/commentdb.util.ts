@@ -21,24 +21,34 @@ export const getCommentsForFile = async (fileId: number) => {
 };
 
 export const createComment = async (content: string, relPos: string, userId: number, fileId: number) => {
-  const comment = await db.comments.create({
-    data: {
-      content,
-      relPos,
-      user: {
-        connect: {
-          id: userId,
+  const comment = await db.$transaction([
+    db.comments.create({
+      data: {
+        content,
+        relPos,
+        user: {
+          connect: {
+            id: userId,
+          },
         },
-      },
-      file: {
-        connect: {
-          id: fileId,
+        file: {
+          connect: {
+            id: fileId,
+          },
         },
+      }
+    }),
+    db.user.findUnique({
+      where: {
+        id: userId,
       },
-    }
-  });
+      select: {
+        email: true,
+      },
+    }),
+  ])
   
-  return comment;
+  return {content: comment[0].content, relPos: comment[0].relPos, user: comment[1], id: comment[0].id};
 };
 
 export const deleteComment = async (commentId: number) => {

@@ -156,10 +156,9 @@ export class YjsFileSocket {
     }
 
     // Save the comment to the database
-    let commentId = await createComment(content, relPos, userId, fileId);
-
+    let comment = await createComment(content, relPos, userId, fileId);
     const comments = doc.getArray("comments");
-    comments.push([{ content, relPos, userId, id: commentId}]);
+    comments.push([comment]);
   }
 
   /**
