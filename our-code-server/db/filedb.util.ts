@@ -232,22 +232,6 @@ export const getFileContent = async (fileId: number) => {
   return file?.content;
 };
 
-export const getFileComments = async (fileId: number) => {
-  const file = await db.file.findUnique({
-    where: {
-      id: fileId,
-    },
-    include: {
-      comments: {
-        include: {
-          user: true,
-        },
-      },
-    },
-  });
-  return file?.comments;
-}
-
 export const writeToFile = async (fileId: number, content: string) => {
   const file = await db.file.update({
     where: {
@@ -259,3 +243,26 @@ export const writeToFile = async (fileId: number, content: string) => {
   });
   return file;
 };
+
+export const saveYDocToFile = async (fileId: number, doc: any) => {
+  const file = await db.file.update({
+    where: {
+      id: fileId,
+    },
+    data: {
+      ydoc: doc,
+    },
+  });
+}
+
+export const getYDocFromFile = async (fileId: number) => {
+  const ydoc = await db.file.findUnique({
+    where: {
+      id: fileId
+    },
+    select: {
+      ydoc: true
+    }
+  })
+  return ydoc?.ydoc;
+}

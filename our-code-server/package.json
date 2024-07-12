@@ -23,6 +23,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
+    "js-base64": "^3.7.7",
     "socket.io": "^4.7.5",
     "yjs": "^13.6.18"
   },
