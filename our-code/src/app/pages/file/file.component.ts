@@ -62,7 +62,6 @@ export class FileComponent implements OnInit, OnDestroy {
   showCreateComments(ed: any) {
     this.visibleCreateComments = true;
     let pos = ed.getPosition();
-    // this.currentOffset = this.getOffset(pos.lineNumber, this.fileSyncService.doc.getText('content').toString())
     this.currentOffset = ed.getModel().getOffsetAt(pos);
     this.relPos =  this.fileSyncService.createRelativePosFromMonacoPos(ed, ed.getModel());
   }
@@ -73,8 +72,10 @@ export class FileComponent implements OnInit, OnDestroy {
       editor.getModel(),
       new Set([editor]),
     )
-
     this.loadComments(editor);
+    this.binding.monacoModel.onDidChangeContent(() => {
+      this.loadComments(editor);
+    })
     const commentArray = this.fileSyncService.doc.getArray('comments')
     commentArray.observe(() => {
       if (!this.firstUpdate) {
