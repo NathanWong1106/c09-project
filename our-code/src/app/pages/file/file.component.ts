@@ -12,6 +12,9 @@ import { DialogModule } from 'primeng/dialog';
 import { InputTextModule } from 'primeng/inputtext';
 import { ButtonModule } from 'primeng/button';
 import { FileService } from '../../shared/services/file-sys/file-sys.service';
+import { AvatarModule } from 'primeng/avatar';
+import { AvatarGroupModule } from 'primeng/avatargroup';
+import { User } from '../../shared/services/auth/auth.interface';
 
 @Component({
   selector: 'app-file',
@@ -24,7 +27,9 @@ import { FileService } from '../../shared/services/file-sys/file-sys.service';
     DialogModule, 
     ButtonModule,
     InputTextModule,
-    MenubarModule
+    MenubarModule,
+    AvatarModule,
+    AvatarGroupModule
   ],
   templateUrl: './file.component.html',
   styleUrl: './file.component.css',
@@ -43,6 +48,7 @@ export class FileComponent implements OnInit, OnDestroy {
   firstUpdate: boolean = false;
   monacoLoaded: boolean = false;
   fileName: string = '';
+  clientsInRoom: User[] = [];
 
   constructor(
     private fileSyncService: FileSyncService,
@@ -70,7 +76,12 @@ export class FileComponent implements OnInit, OnDestroy {
         detail: error,
       });
     });
-    this.fileSyncService.joinFile(this.activatedRoute.snapshot.params['id']);
+
+    this.fileSyncService.joinFile(this.activatedRoute.snapshot.params['id'], this.presenceUpdate.bind(this));
+  }
+
+  presenceUpdate(connectedUsers: User[]) {
+    this.clientsInRoom = connectedUsers;
   }
 
   showCreateComments(ed: any) {
@@ -85,6 +96,7 @@ export class FileComponent implements OnInit, OnDestroy {
       this.fileSyncService.doc.getText('content'),
       editor.getModel(),
       new Set([editor]),
+      this.fileSyncService.awareness,
     )
     this.loadComments(editor);
     this.binding.monacoModel.onDidChangeContent(() => {
