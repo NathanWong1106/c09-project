@@ -5,14 +5,25 @@ import {
   getYDocFromFile,
   hasPermsForFile,
   saveYDocToFile,
-  writeToFile,
 } from "../db/filedb.util";
-import { createComment, deleteComment, getCommentsForFile } from "../db/commentdb.util";
+import {
+  createComment,
+  deleteComment,
+  getCommentsForFile,
+} from "../db/commentdb.util";
 import { applyUpdate, Doc, encodeStateAsUpdate } from "yjs";
 import { fromUint8Array, toUint8Array } from "js-base64";
+import {
+  applyAwarenessUpdate,
+  Awareness,
+  encodeAwarenessUpdate,
+} from "y-protocols/awareness";
+
+const socketUpdateEvents = ["file-edit", "client-awareness-update"];
 
 export class YjsFileSocket {
   private documents: Map<string, Doc> = new Map();
+  private documentAwareness: Map<string, Awareness> = new Map();
 
   constructor(private io: Server) {
     this.io = io;
@@ -23,6 +34,7 @@ export class YjsFileSocket {
    */
   public init(): void {
     this.io.on("connection", (socket: Socket) => {
+      const sessionSocket = socket as SessionSocket;
 
       // When a user joins a file, check if they have permission to access it
       // If they do, initialize the socket with the document
@@ -30,10 +42,10 @@ export class YjsFileSocket {
         if (
           await hasPermsForFile(
             parseInt(fileId),
-            (socket as SessionSocket).request.session?.user.id
+            sessionSocket.request.session?.user.id
           )
         ) {
-          this.initSocketWithDoc(socket, fileId);
+          await this.initSocketWithDoc(socket, fileId);
         } else {
           socket.emit(
             "error",
@@ -49,25 +61,35 @@ export class YjsFileSocket {
           return;
         }
         socket.leave(fileId);
-        socket.removeAllListeners("file-edit");
-      });
-
-      socket.on("create-comment", async (content: string, relPos: string, fileId: string) => {
-        if (
-          await hasPermsForFile(
-            parseInt(fileId), 
-            (socket as SessionSocket).request.session?.user.id
-          )
-        ) {
-          this.createComment(content, relPos, (socket as SessionSocket).request.session?.user.id, parseInt(fileId));
+        for (const event of socketUpdateEvents) {
+          socket.removeAllListeners(event);
         }
       });
+
+      socket.on(
+        "create-comment",
+        async (content: string, relPos: string, fileId: string) => {
+          if (
+            await hasPermsForFile(
+              parseInt(fileId),
+              sessionSocket.request.session?.user.id
+            )
+          ) {
+            this.createComment(
+              content,
+              relPos,
+              sessionSocket.request.session?.user.id,
+              parseInt(fileId)
+            );
+          }
+        }
+      );
 
       socket.on("delete-comment", async (commentId: number, fileId: string) => {
         if (
           await hasPermsForFile(
-            parseInt(fileId), 
-            (socket as SessionSocket).request.session?.user.id
+            parseInt(fileId),
+            sessionSocket.request.session?.user.id
           )
         ) {
           this.deleteComment(commentId, parseInt(fileId));
@@ -83,11 +105,7 @@ export class YjsFileSocket {
         const doc = this.documents.get(fileId);
 
         if (doc) {
-          // const text = doc.getText("content");
-          // const content = text.toString();
-
           // Save the document to the database
-          // writeToFile(parseInt(fileId), content);
           const docState = encodeStateAsUpdate(doc);
           const base64Encoded = fromUint8Array(docState);
           await saveYDocToFile(parseInt(fileId), base64Encoded);
@@ -102,7 +120,7 @@ export class YjsFileSocket {
 
   /**
    * Initialize the socket with the document for the given file id
-   * 
+   *
    * @param socket The socket to initialize
    * @param fileId The file id to initialize the socket with
    */
@@ -122,8 +140,27 @@ export class YjsFileSocket {
       applyUpdate(doc, updateArr);
     });
 
-    // Sync the document with the socket
+    // When this socket sends an awareness update, apply it to the document
+    socket.on("client-awareness-update", (update: Uint8Array) => {
+      const updateArr = new Uint8Array(update);
+      applyAwarenessUpdate(
+        this.documentAwareness.get(fileId)!,
+        updateArr,
+        this
+      );
+    });
+
+    // Initial sync of the document with the socket
     socket.emit("file-update", encodeStateAsUpdate(doc));
+
+    // Initial sync of document awareness with the socket
+    socket.emit(
+      "awareness-update",
+      encodeAwarenessUpdate(
+        this.documentAwareness.get(fileId)!,
+        Array.from(this.documentAwareness.get(fileId)!.getStates().keys())
+      )
+    );
   }
 
   /**
@@ -134,9 +171,9 @@ export class YjsFileSocket {
   private async getOrCreateDoc(fileId: string): Promise<Doc> {
     if (!this.documents.has(fileId)) {
       // Grab a document from store or initialize a new one
-      const docBuffer = await getYDocFromFile(parseInt(fileId))
+      const docBuffer = await getYDocFromFile(parseInt(fileId));
 
-      let update: Uint8Array | null =  null;
+      let update: Uint8Array | null = null;
       if (docBuffer) {
         update = toUint8Array(docBuffer);
       }
@@ -155,6 +192,30 @@ export class YjsFileSocket {
       doc.on("update", () => {
         this.io.to(fileId).emit("file-update", encodeStateAsUpdate(doc));
       });
+
+      // Initialize awareness for this document
+      const awareness = new Awareness(doc);
+      awareness.on(
+        "update",
+        ({
+          added,
+          updated,
+          removed,
+        }: {
+          added: any[];
+          updated: any[];
+          removed: any[];
+        }) => {
+          const changedClients = added.concat(updated).concat(removed);
+          this.io
+            .to(fileId)
+            .emit(
+              "awareness-update",
+              encodeAwarenessUpdate(awareness, changedClients)
+            );
+        }
+      );
+      this.documentAwareness.set(fileId, awareness);
     }
     return this.documents.get(fileId)!;
   }
@@ -166,7 +227,12 @@ export class YjsFileSocket {
    * @param userId the id of the user creating the comment
    * @param fileId the id of the file the comment is on
    */
-  private async createComment(content: string, relPos: string, userId:number, fileId: number) {
+  private async createComment(
+    content: string,
+    relPos: string,
+    userId: number,
+    fileId: number
+  ) {
     const doc = this.documents.get(fileId.toString());
     if (!doc) {
       return;
@@ -193,7 +259,9 @@ export class YjsFileSocket {
     await deleteComment(commentId);
 
     const comments = doc.getArray("comments");
-    const commentIndex = comments.toArray().findIndex((comment: any) => comment.id === commentId);
+    const commentIndex = comments
+      .toArray()
+      .findIndex((comment: any) => comment.id === commentId);
     if (commentIndex !== -1) {
       comments.delete(commentIndex, 1);
     }
@@ -203,8 +271,6 @@ export class YjsFileSocket {
     const text = doc.getText("content");
     const comments = doc.getArray("comments");
     text.insert(0, (await getFileContent(parseInt(fileId))) ?? "");
-
-    // TODO: Initialize comments with defined interface
     comments.push((await getCommentsForFile(parseInt(fileId))) ?? []);
   }
 }

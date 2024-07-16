@@ -1,7 +1,36 @@
 <p-menubar>
-  <ng-template pTemplate="start" class="flex">
-    <div class="flex">
-      <h2>{{fileName}}</h2>
+  <ng-template pTemplate="start">
+    <h2 class="pl-5">{{ fileName }}</h2>
+  </ng-template>
+  <ng-template pTemplate="end">
+    <div class="pr-5">
+      <p-button pTooltip="Collaborators" tooltipPosition="bottom" (onClick)="collaboratorsOp.toggle($event)" icon="pi pi-users" />
+      <p-overlayPanel #collaboratorsOp>
+        <div>
+          <span class="font-medium text-900 block mb-4">Collaborators</span>
+          @if(collaborators.length === 0) {
+          <p>Only you are currently editing this file</p>
+          } @else {
+          <ul class="list-none px-5 m-0 flex flex-column gap-3 overflow-auto max-h-14rem">
+            @for(collaborator of collaborators; track collaborator.awarenessClientId) {
+            <li class="flex align-items-center gap-2">
+              <img
+                [src]="collaborator.picture"
+                class="pfp"
+                [style.border-color]="getColorForCollaborator(collaborator)"
+              />
+              <div>
+                <span class="font-medium">{{ collaborator.name }}</span>
+                <div class="text-sm text-color-secondary">
+                  {{ collaborator.email }}
+                </div>
+              </div>
+            </li>
+            }
+          </ul>
+          }
+        </div>
+      </p-overlayPanel>
     </div>
   </ng-template>
 </p-menubar>
@@ -25,20 +54,13 @@
     <p-dialog
       header="Add Comment"
       [modal]="true"
-      [(visible)]="visibleCreateComments">
+      [(visible)]="visibleCreateComments"
+    >
       <div class="flex align-items-center gap-3 mb-5">
-        <label for="comment">Comment</label>          
-        <input
-          id="comment"
-          type="text"
-          pInputText
-          [(ngModel)]="comment"
-        />
+        <label for="comment">Comment</label>
+        <input id="comment" type="text" pInputText [(ngModel)]="comment" />
       </div>
-      <p-button
-        label="Add"
-        class="mr-2"
-        (click)="addComment(comment)"/>
+      <p-button label="Add" class="mr-2" (click)="addComment(comment)" />
     </p-dialog>
   </ng-template>
   <ng-template pTemplate>
