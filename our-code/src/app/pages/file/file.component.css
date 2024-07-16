@@ -1,0 +1,8 @@
+.pfp {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    border-width: 3px;
+    border-style: solid;
+    margin-right: 10px;
+}

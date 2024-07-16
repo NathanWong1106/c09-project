@@ -14,7 +14,9 @@ import { ButtonModule } from 'primeng/button';
 import { FileService } from '../../shared/services/file-sys/file-sys.service';
 import { AvatarModule } from 'primeng/avatar';
 import { AvatarGroupModule } from 'primeng/avatargroup';
-import { User } from '../../shared/services/auth/auth.interface';
+import { OverlayPanelModule } from 'primeng/overlaypanel';
+import { Collaborator } from '../../shared/services/filesync/filesync.interface';
+import uniqolor from 'uniqolor';
 
 @Component({
   selector: 'app-file',
@@ -29,7 +31,8 @@ import { User } from '../../shared/services/auth/auth.interface';
     InputTextModule,
     MenubarModule,
     AvatarModule,
-    AvatarGroupModule
+    AvatarGroupModule,
+    OverlayPanelModule,
   ],
   templateUrl: './file.component.html',
   styleUrl: './file.component.css',
@@ -48,7 +51,7 @@ export class FileComponent implements OnInit, OnDestroy {
   firstUpdate: boolean = false;
   monacoLoaded: boolean = false;
   fileName: string = '';
-  clientsInRoom: User[] = [];
+  collaborators: Collaborator[] = [];
 
   constructor(
     private fileSyncService: FileSyncService,
@@ -78,10 +81,20 @@ export class FileComponent implements OnInit, OnDestroy {
     });
 
     this.fileSyncService.joinFile(this.activatedRoute.snapshot.params['id'], this.presenceUpdate.bind(this));
+    window.addEventListener('beforeunload', () => {
+      this.fileSyncService.leaveFile(this.activatedRoute.snapshot.params['id']);
+    });
   }
 
-  presenceUpdate(connectedUsers: User[]) {
-    this.clientsInRoom = connectedUsers;
+  presenceUpdate(collaborators: Collaborator[]) {
+    this.collaborators = collaborators;
+  }
+
+  getColorForCollaborator(collaborator: Collaborator) {
+    return uniqolor(collaborator.awarenessClientId, {
+      lightness: 60,
+      saturation: 60,
+    }).color;
   }
 
   showCreateComments(ed: any) {

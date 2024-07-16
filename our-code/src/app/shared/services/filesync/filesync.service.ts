@@ -17,6 +17,7 @@ import {
 import { injectStyleForClients } from '../../utils/monaco.utils';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/auth.interface';
+import { Collaborator } from './filesync.interface';
 
 @Injectable({
   providedIn: 'root',
@@ -42,7 +43,10 @@ export class FileSyncService {
    *
    * @param fileId the file id
    */
-  public joinFile(fileId: string, presenceUpdate: (connectedUsers: User[]) => void) {
+  public joinFile(
+    fileId: string,
+    presenceUpdate: (connectedUsers: Collaborator[]) => void
+  ) {
     // Join the file room
     this.socket.emit('join-file', fileId);
 
@@ -57,15 +61,18 @@ export class FileSyncService {
       const updateArr = new Uint8Array(update);
       applyAwarenessUpdate(this.awareness, updateArr, this);
 
-      const uniqueUsers: Map<string, User> = new Map<string, User>();
-      this.awareness.getStates().forEach((state) => {
-        if (state['user'] && state['user']['id'] !== this.user?.id) {
-          uniqueUsers.set(state['user']['id'], state['user']);
+      const collaborators: Collaborator[] = [];
+      this.awareness.getStates().forEach((state, clientId) => {
+        if (state['user'] && clientId !== this.doc.clientID) {
+          collaborators.push({
+            awarenessClientId: clientId,
+            ...state['user'],
+          });
         }
       });
 
       // Pass the connected users to the component
-      presenceUpdate(Array.from(uniqueUsers.values()));
+      presenceUpdate(Array.from(collaborators.values()));
     });
 
     // When we update the document, send the update to the server
@@ -75,7 +82,7 @@ export class FileSyncService {
 
     // When the awareness changes, send the update to the server
     this.awareness.on(
-      'change',
+      'update',
       ({
         added,
         updated,
@@ -86,7 +93,6 @@ export class FileSyncService {
         removed: any[];
       }) => {
         injectStyleForClients([...added, ...updated]);
-
         const changedClients = added.concat(updated).concat(removed);
         this.socket.emit(
           'client-awareness-update',
