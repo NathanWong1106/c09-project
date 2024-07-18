@@ -3,38 +3,32 @@ import { HttpClient } from "@angular/common/http";
 import { environment } from "../../../../environments/environment";
 import { Workspace } from "./workspace.interface";
 import { AuthService } from "../auth/auth.service";
-import { switchMap, of, throwError } from "rxjs";
-import { catchError, map } from "rxjs/operators";
+import { User } from "../auth/auth.interface";
 
 @Injectable({
   providedIn: 'root',
 })
 
 export class WorkspaceService {
+  private user: User | null = null;
+
   private endpoint = environment.apiEndpoint;
 
-  constructor(private http: HttpClient, private authService: AuthService) { }
+  constructor(private http: HttpClient, private authService: AuthService) { 
+    this.authService.user$.subscribe((user) => {
+      this.user = user;
+    });
+  }
 
   public getMyWorkspaces(page: number) {
-    return this.authService.user$.pipe(
-      switchMap((user) => {
-        if (!user) {
-          return throwError(() => new Error('User not authenticated'));
-        }
-        return this.http.get<{ workspaces: Workspace[], total: number }>(
-          `${this.endpoint}/api/workspace?page=${page}`, 
-          { withCredentials: true }
-        );
-      })
+    return this.http.get<{ workspaces: Workspace[], total: number }>(
+      `${this.endpoint}/api/workspace?page=${page}`, 
+      { withCredentials: true }
     );
   }
 
   public createWorkspace(name: string) {
-    return this.authService.user$.pipe(
-      switchMap((user) => {
-        return this.http.post<Workspace>(`${this.endpoint}/api/workspace`, { name, owner: user?.id }, { withCredentials: true });
-      })
-    );
+    return this.http.post<Workspace>(`${this.endpoint}/api/workspace`, { name, owner: this.user?.id }, { withCredentials: true });
   }
 
   public findWorkspaceByName(name: string, page: number) {

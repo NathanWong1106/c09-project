@@ -2,9 +2,6 @@ import { Injectable } from "@angular/core";
 import { HttpClient } from "@angular/common/http";
 import { environment } from "../../../../environments/environment";
 import { Workspace } from "../workspace/workspace.interface";
-import { AuthService } from "../auth/auth.service";
-import { switchMap, of, throwError } from "rxjs";
-import { map, catchError } from "rxjs/operators";
 
 @Injectable({
   providedIn: 'root',
@@ -13,19 +10,12 @@ import { map, catchError } from "rxjs/operators";
 export class SharedWorkspaceService {
   private endpoint = environment.apiEndpoint;
 
-  constructor(private http: HttpClient, private authService: AuthService) { }
+  constructor(private http: HttpClient) { }
 
   public getSharedWorkspaces(page: number) {
-    return this.authService.user$.pipe(
-      switchMap((user) => {
-        if (!user) {
-          return throwError(() => new Error('User not authenticated'));
-        }
-        return this.http.get<{ workspaces: Workspace[], total: number }>(
-          `${this.endpoint}/api/sharedworkspace?page=${page}`,
-          { withCredentials: true }
-        );
-      })
+    return this.http.get<{ workspaces: Workspace[], total: number }>(
+      `${this.endpoint}/api/sharedworkspace?page=${page}`,
+      { withCredentials: true }
     );
   }
 

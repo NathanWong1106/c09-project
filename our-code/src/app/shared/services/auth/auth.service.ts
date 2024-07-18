@@ -15,6 +15,8 @@ export class AuthService {
   );
   private isAuth: boolean = false;
 
+  private isLoggingOut: boolean = false;
+
   private DEFAULT_REDIRECT_URL: string = '/workspaces';
   private redirectUrl: string = this.DEFAULT_REDIRECT_URL;
 
@@ -43,14 +45,17 @@ export class AuthService {
 
   public logout(): Observable<boolean> {
     return new Observable((observer) => {
+      this.isLoggingOut = true;
       this.doLogout().subscribe({
         next: (response) => {
+          this.isLoggingOut = false;
           this.isAuth = false;
           this.user.next(null);
           this.redirectUrl = this.DEFAULT_REDIRECT_URL;
           observer.next(true);
         },
         error: (error) => {
+          this.isLoggingOut = false;
           console.error(error);
           observer.next(false);
         },
@@ -60,6 +65,10 @@ export class AuthService {
 
   public isAuthenticated(): boolean {
     return this.isAuth;
+  }
+
+  public prepareLogOut(): void {
+    this.isLoggingOut = true;
   }
 
   public me(): Observable<{ user: User }> {
@@ -75,6 +84,11 @@ export class AuthService {
    * @returns Observable<boolean>
    */
   public checkAuth(): Observable<boolean> {
+    if (this.isLoggingOut) {
+      return new Observable((observer) => {
+        observer.next(false);
+      });
+    }
     if (this.isAuth) {
       return new Observable((observer) => {
         observer.next(true);
