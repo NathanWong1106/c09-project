@@ -64,7 +64,27 @@
     </p-dialog>
   </ng-template>
   <ng-template pTemplate>
-    <div>Output from Judge0</div>
+    <p-splitter
+      [style]="{ height: '100%' }"
+      [panelSizes]="[50, 50]"
+      [minSizes]="[25, 25]"
+      layout="horizontal"
+    >
+      <ng-template pTemplate>
+        <p-terminal
+          [style]="{backgroundColor:'var(--gray-900)', color:'var(--gray-100)'}"
+          class="h-full w-full"
+          welcomeMessage="Input"
+        />
+      </ng-template>
+      <ng-template pTemplate>
+        <p-terminal
+          [style]="{backgroundColor:'var(--gray-900)', color:'var(--gray-100)'}"
+          class="h-full w-full"
+          welcomeMessage="Output"
+        />
+      </ng-template>
+    </p-splitter>
   </ng-template>
 </p-splitter>
 }

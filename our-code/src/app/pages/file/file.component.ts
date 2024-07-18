@@ -16,6 +16,7 @@ import { AvatarModule } from 'primeng/avatar';
 import { AvatarGroupModule } from 'primeng/avatargroup';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { Collaborator } from '../../shared/services/filesync/filesync.interface';
+import { TerminalModule, TerminalService } from 'primeng/terminal';
 import uniqolor from 'uniqolor';
 
 @Component({
@@ -33,7 +34,9 @@ import uniqolor from 'uniqolor';
     AvatarModule,
     AvatarGroupModule,
     OverlayPanelModule,
+    TerminalModule,
   ],
+  providers: [TerminalService],
   templateUrl: './file.component.html',
   styleUrl: './file.component.css',
 })
