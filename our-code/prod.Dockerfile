@@ -1,4 +1,4 @@
-FROM node:alpine as build
+FROM node:20-alpine as build
 
 # Copy npm package files, install, and build
 WORKDIR /app
