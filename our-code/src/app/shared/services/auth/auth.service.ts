@@ -45,7 +45,6 @@ export class AuthService {
 
   public logout(): Observable<boolean> {
     return new Observable((observer) => {
-      this.isLoggingOut = true;
       this.doLogout().subscribe({
         next: (response) => {
           this.isLoggingOut = false;
