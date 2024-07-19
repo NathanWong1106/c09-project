@@ -1,6 +1,6 @@
 # Development Dockerfile - Not for production use
 
-FROM node:alpine
+FROM node:20-alpine
 
 WORKDIR /usr/src/app
 
