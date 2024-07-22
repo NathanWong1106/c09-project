@@ -1,5 +1,4 @@
-<p-toast></p-toast>
-<ng-container *ngIf="workspaces.length > 0; else noWorkspaces">
+<ng-container *ngIf="totalRecords > 0; else noWorkspaces">
   <p-treeTable 
   [value]="workspaces" 
   [columns]="cols" 

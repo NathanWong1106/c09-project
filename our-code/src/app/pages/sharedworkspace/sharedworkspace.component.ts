@@ -53,8 +53,8 @@ export class SharedWorkspaceComponent implements OnInit {
         next: (res) => {
           this.totalRecords = res.total;
           this.sharedworkspaces = [];
-          if (res.workspace.length > 0) {
-            for (const workspace of res.workspace) {
+          if (res.workspaces.length > 0) {
+            for (const workspace of res.workspaces) {
               this.sharedworkspaces = [...this.sharedworkspaces, { data: { name: workspace.workspace.name, owner: workspace.workspace.user.email, id: workspace.workspace.id } }];
             } 
           } else {

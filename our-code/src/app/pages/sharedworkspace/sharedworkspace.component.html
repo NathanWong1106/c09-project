@@ -1,5 +1,4 @@
-<p-toast></p-toast>
-<ng-container *ngIf="sharedworkspaces.length > 0; else noSharedWorkspaces">
+<ng-container *ngIf="totalRecords > 0; else noSharedWorkspaces">
 <p-treeTable 
   [value]="sharedworkspaces" 
   [columns]="cols" 
