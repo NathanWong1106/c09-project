@@ -31,7 +31,11 @@ export const findSharedWorkspacesByName = async (userId: number, name: string, p
       where: {
         userId,
         workspace: {
-          name,
+          name: {
+            // Replace all whitespace characters with underscores
+            // https://github.com/prisma/prisma/issues/8939
+            search: name.replace(/[\s\n\t]/g, '_')
+          }
         },
       },
       skip: page * 10,
@@ -47,9 +51,6 @@ export const findSharedWorkspacesByName = async (userId: number, name: string, p
     db.sharedWorkspace.count({
       where: {
         userId,
-        workspace: {
-          name,
-        },
       },
     }),
   ]);
