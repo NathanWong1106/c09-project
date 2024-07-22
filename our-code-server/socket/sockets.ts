@@ -20,9 +20,11 @@ import {
 } from "y-protocols/awareness";
 
 const socketUpdateEvents = ["file-edit", "client-awareness-update"];
+const SAVE_INTERVAL = 10;
 
 export class YjsFileSocket {
   private documents: Map<string, Doc> = new Map();
+  private documentClocks: Map<string, number> = new Map();
   private documentAwareness: Map<string, Awareness> = new Map();
 
   constructor(private io: Server) {
@@ -106,13 +108,15 @@ export class YjsFileSocket {
 
         if (doc) {
           // Save the document to the database
-          const docState = encodeStateAsUpdate(doc);
-          const base64Encoded = fromUint8Array(docState);
-          await saveYDocToFile(parseInt(fileId), base64Encoded);
+          this.saveDoc(fileId, doc);
 
           // Destroy the document in memory
           doc.destroy();
           this.documents.delete(fileId);
+        }
+
+        if (this.documentClocks.has(fileId)) {
+          this.documentClocks.delete(fileId);
         }
       }
     });
@@ -188,8 +192,12 @@ export class YjsFileSocket {
       // Store the document in memory
       this.documents.set(fileId, doc);
 
+      // Store the clock of the document
+      this.documentClocks.set(fileId, 0);
+
       // When the document updates, send the update to all sockets in its room
-      doc.on("update", () => {
+      doc.on("update", async () => {
+        await this.tick(fileId);
         this.io.to(fileId).emit("file-update", encodeStateAsUpdate(doc));
       });
 
@@ -242,6 +250,9 @@ export class YjsFileSocket {
     let comment = await createComment(content, relPos, userId, fileId);
     const comments = doc.getArray("comments");
     comments.push([comment]);
+
+    // Save the document to the database
+    this.saveDoc(fileId.toString(), doc);
   }
 
   /**
@@ -265,6 +276,9 @@ export class YjsFileSocket {
     if (commentIndex !== -1) {
       comments.delete(commentIndex, 1);
     }
+
+    // Save the document to the database
+    this.saveDoc(fileId.toString(), doc);
   }
 
   private async initDoc(doc: Doc, fileId: string): Promise<void> {
@@ -272,5 +286,36 @@ export class YjsFileSocket {
     const comments = doc.getArray("comments");
     text.insert(0, (await getFileContent(parseInt(fileId))) ?? "");
     comments.push((await getCommentsForFile(parseInt(fileId))) ?? []);
+  }
+
+  /**
+   * Track the number of updates to a document and save it to the database every 10 updates
+   * @param fileId the file id
+   */
+  private async tick (fileId: string) {
+    const doc = this.documents.get(fileId);
+    if (!doc) {
+      return;
+    }
+    const clock = this.documentClocks.get(fileId);
+    if (clock === undefined) {
+      return;
+    }
+    
+    this.documentClocks.set(fileId, clock + 1);
+    if (clock % SAVE_INTERVAL === 0) {
+      this.saveDoc(fileId, doc);
+    }
+  }
+
+  /**
+   * Write the document with file id to the database
+   * @param fileId The file id
+   * @param doc The document to save
+   */
+  private async saveDoc(fileId: string, doc: Doc) {
+    const update = encodeStateAsUpdate(doc);
+    const base64Encoded = fromUint8Array(update);
+    await saveYDocToFile(parseInt(fileId), base64Encoded);
   }
 }
