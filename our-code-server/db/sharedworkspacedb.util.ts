@@ -32,9 +32,7 @@ export const findSharedWorkspacesByName = async (userId: number, name: string, p
         userId,
         workspace: {
           name: {
-            // Replace all whitespace characters with underscores
-            // https://github.com/prisma/prisma/issues/8939
-            search: name.replace(/[\s\n\t]/g, '_')
+            contains: name,
           }
         },
       },

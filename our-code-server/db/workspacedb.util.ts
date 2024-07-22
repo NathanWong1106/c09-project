@@ -77,7 +77,7 @@ export const findWorkspacesByName = async (
         name: {
           // Replace all whitespace characters with underscores
           // https://github.com/prisma/prisma/issues/8939
-          search: name.replace(/[\s\n\t]/g, '_')
+          contains: name
         },
         userId: userId,
       },
