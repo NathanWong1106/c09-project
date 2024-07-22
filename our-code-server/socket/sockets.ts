@@ -108,7 +108,7 @@ export class YjsFileSocket {
 
         if (doc) {
           // Save the document to the database
-          this.saveDoc(fileId, doc);
+          await this.saveDoc(fileId, doc);
 
           // Destroy the document in memory
           doc.destroy();
@@ -252,7 +252,7 @@ export class YjsFileSocket {
     comments.push([comment]);
 
     // Save the document to the database
-    this.saveDoc(fileId.toString(), doc);
+    await this.saveDoc(fileId.toString(), doc);
   }
 
   /**
@@ -278,7 +278,7 @@ export class YjsFileSocket {
     }
 
     // Save the document to the database
-    this.saveDoc(fileId.toString(), doc);
+    await this.saveDoc(fileId.toString(), doc);
   }
 
   private async initDoc(doc: Doc, fileId: string): Promise<void> {
@@ -304,7 +304,7 @@ export class YjsFileSocket {
     
     this.documentClocks.set(fileId, clock + 1);
     if (clock % SAVE_INTERVAL === 0) {
-      this.saveDoc(fileId, doc);
+      await this.saveDoc(fileId, doc);
     }
   }
 
