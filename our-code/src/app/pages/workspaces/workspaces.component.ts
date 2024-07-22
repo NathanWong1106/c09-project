@@ -215,8 +215,8 @@ export class WorkspacesComponent implements OnInit {
         next: (res) => {
           this.totalRecords = res.total;
           this.workspaces = [];
-          if (res.workspace.length > 0) {
-            for (const workspace of res.workspace) {
+          if (res.workspaces.length > 0) {
+            for (const workspace of res.workspaces) {
               this.workspaces = [...this.workspaces, { data: { name: workspace.name, owner: workspace.user.email, id: workspace.id } }];
             }
           } else {

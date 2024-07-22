@@ -3,18 +3,18 @@ import db from "./dbConn";
 export const createWorkspace = async (userId: number, name: string) => {
   const workspace = await db.workspace.create({
     data: {
-    name,
+      name,
       user: {
-          connect: {
+        connect: {
           id: userId,
-          },
+        },
       },
     },
     include: {
       user: true,
-    }
+    },
   });
-  
+
   return workspace;
 };
 
@@ -35,7 +35,7 @@ export const getMyWorkspaces = async (userId: number, page: number) => {
         userId,
       },
     }),
-  ])
+  ]);
 
   return workspaces;
 };
@@ -48,7 +48,10 @@ export const deleteWorkspace = async (workspaceId: number) => {
   });
 };
 
-export const hasPermsForWorkspace = async (userId: number, workspaceId: number) => {
+export const hasPermsForWorkspace = async (
+  userId: number,
+  workspaceId: number
+) => {
   const workspace = await db.workspace.findUnique({
     where: {
       id: workspaceId,
@@ -57,14 +60,26 @@ export const hasPermsForWorkspace = async (userId: number, workspaceId: number) 
       sharedUsers: true,
     },
   });
-  return workspace?.userId === userId || workspace?.sharedUsers.find((user) => user.userId === userId);
+  return (
+    workspace?.userId === userId ||
+    workspace?.sharedUsers.find((user) => user.userId === userId)
+  );
 };
 
-export const findWorkspacesByName = async (name: string, page: number) => {
+export const findWorkspacesByName = async (
+  name: string,
+  page: number,
+  userId: number
+) => {
   const workspace = await db.$transaction([
     db.workspace.findMany({
       where: {
-        name,
+        name: {
+          // Replace all whitespace characters with underscores
+          // https://github.com/prisma/prisma/issues/8939
+          contains: name
+        },
+        userId: userId,
       },
       skip: page * 10,
       take: 10,
@@ -74,13 +89,13 @@ export const findWorkspacesByName = async (name: string, page: number) => {
     }),
     db.workspace.count({
       where: {
-        name,
+        userId: userId,
       },
     }),
-  ])
+  ]);
 
   return workspace;
-}
+};
 
 export const findWorkspaceById = async (id: number) => {
   const workspace = await db.workspace.findUnique({
@@ -92,7 +107,7 @@ export const findWorkspaceById = async (id: number) => {
     },
   });
   return workspace;
-}
+};
 
 export const editWorkspace = async (workspaceId: number, name: string) => {
   const workspace = await db.workspace.update({
@@ -108,4 +123,4 @@ export const editWorkspace = async (workspaceId: number, name: string) => {
   });
 
   return workspace;
-}
+};

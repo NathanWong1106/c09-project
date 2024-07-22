@@ -32,6 +32,6 @@ export class SharedWorkspaceService {
   }
 
   public findSharedWorkspacesByName(name: string, page: number) {
-    return this.http.get<{workspace: Workspace[], total: number}>(`${this.endpoint}/api/sharedworkspace/search?name=${name}&page=${page}`, { withCredentials: true });
+    return this.http.get<{workspaces: Workspace[], total: number}>(`${this.endpoint}/api/sharedworkspace?search=${name}&page=${page}`, { withCredentials: true });
   }
 }

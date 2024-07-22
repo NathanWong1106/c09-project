@@ -32,7 +32,7 @@ export class WorkspaceService {
   }
 
   public findWorkspaceByName(name: string, page: number) {
-    return this.http.get<{workspace: Workspace[], total: number}>(`${this.endpoint}/api/workspace/search?name=${name}&page=${page}`, { withCredentials: true });
+    return this.http.get<{workspaces: Workspace[], total: number}>(`${this.endpoint}/api/workspace?search=${name}&page=${page}`, { withCredentials: true });
   }
 
   public findWorkspaceById(id: number) {

@@ -31,7 +31,9 @@ export const findSharedWorkspacesByName = async (userId: number, name: string, p
       where: {
         userId,
         workspace: {
-          name,
+          name: {
+            contains: name,
+          }
         },
       },
       skip: page * 10,
@@ -47,9 +49,6 @@ export const findSharedWorkspacesByName = async (userId: number, name: string, p
     db.sharedWorkspace.count({
       where: {
         userId,
-        workspace: {
-          name,
-        },
       },
     }),
   ]);
