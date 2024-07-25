@@ -4,6 +4,7 @@ import {
   createRelativePosFromMonacoPos,
   createMonacoPosFromRelativePos,
 } from '../../shared/utils/monaco.utils';
+import { TreeTableModule } from 'primeng/treetable';
 import { CommentLikesService } from '../../shared/services/comments/commentslikes.service';
 import { CommentService } from '../../shared/services/comments/comments.service';
 import { ActivatedRoute } from '@angular/router';
@@ -40,6 +41,7 @@ import uniqolor from 'uniqolor';
     AvatarModule,
     AvatarGroupModule,
     OverlayPanelModule,
+    TreeTableModule,
   ],
   templateUrl: './file.component.html',
   styleUrl: './file.component.css',

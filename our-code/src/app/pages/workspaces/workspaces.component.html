@@ -126,32 +126,36 @@
 </ng-container>
 
 <ng-template #noWorkspaces>
-    <p-menubar>
-      <ng-template pTemplate="start">
-        <h2>My Workspaces</h2>
-      </ng-template>
-      <ng-template pTemplate="end">
-          <p-button
-          label="Create Workspace"
-          icon="pi pi-plus"
-          (click)="showDialogCreate()"
-          class="mr-2"/>
-          <p-dialog
-            header="Create a Workspace"
-            [(visible)]="visibleCreate"
-            [modal]="true">
-            <div class="flex align-items-center gap-3 mb-5">
-              <label for="name" class="mr-2">Name</label>
-              <input pInputText id="name" class="flex-auto" [(ngModel)]="workspaceName" autocomplete="off"/>
-            </div>
-            <ng-template pTemplate="footer">
-              <p-button
-                label="Create"
-                (click)="createWorkspace(workspaceName)"
-                class="mr-2"/>
-            </ng-template>
-          </p-dialog>
-      </ng-template>
-    </p-menubar>
+  <p-treeTable>
+    <ng-template pTemplate="caption">
+      <p-menubar>
+        <ng-template pTemplate="start">
+          <h2>My Workspaces</h2>
+        </ng-template>
+        <ng-template pTemplate="end">
+            <p-button
+            label="Create Workspace"
+            icon="pi pi-plus"
+            (click)="showDialogCreate()"
+            class="mr-2"/>
+            <p-dialog
+              header="Create a Workspace"
+              [(visible)]="visibleCreate"
+              [modal]="true">
+              <div class="flex align-items-center gap-3 mb-5">
+                <label for="name" class="mr-2">Name</label>
+                <input pInputText id="name" class="flex-auto" [(ngModel)]="workspaceName" autocomplete="off"/>
+              </div>
+              <ng-template pTemplate="footer">
+                <p-button
+                  label="Create"
+                  (click)="createWorkspace(workspaceName)"
+                  class="mr-2"/>
+              </ng-template>
+            </p-dialog>
+        </ng-template>
+      </p-menubar>
+    </ng-template>
+  </p-treeTable>
   <div class="flex align-items-center justify-content-center my-5 text-5xl">No Workspaces found.</div>
 </ng-template>
