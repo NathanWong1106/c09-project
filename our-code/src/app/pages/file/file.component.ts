@@ -1,5 +1,6 @@
 import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { FileSyncService } from '../../shared/services/filesync/filesync.service';
+import { Judge0Service } from '../../shared/services/judge0/judge0.service';
 import { ActivatedRoute } from '@angular/router';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { FormsModule } from '@angular/forms';
@@ -55,13 +56,16 @@ export class FileComponent implements OnInit, OnDestroy {
   monacoLoaded: boolean = false;
   fileName: string = '';
   collaborators: Collaborator[] = [];
+  consoleInput: string = '';
+  runLoading: boolean = false;
 
   constructor(
     private fileSyncService: FileSyncService,
     private activatedRoute: ActivatedRoute,
     private messageService: MessageService,
     private ngZone: NgZone,
-    private fileService: FileService
+    private fileService: FileService,
+    private judge0Service: Judge0Service,
   ) {}
 
   ngOnInit(): void {
@@ -253,5 +257,37 @@ export class FileComponent implements OnInit, OnDestroy {
 
 
     return commentElement;
+  }
+
+  submitCode() {
+    const fileId = this.activatedRoute.snapshot.params['id'];
+    this.runLoading = true;
+    this.messageService.add({ severity: 'info', summary: 'Running Code', detail: 'Running code on Judge0' });
+    // Check X-Auth
+    this.judge0Service.checkJudge0Auth().subscribe({
+      next: (res: any) => {
+        // Submit code
+        this.judge0Service.submitCode(fileId, this.code, 71, '').subscribe({
+          next: (res: any) => {
+            this.runLoading = false;
+            this.messageService.add({ severity: 'success', summary: 'Code Ran', detail: 'Code ran successfully on Judge0' });
+          },
+          error: (err) => {
+            this.runLoading = false;
+            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error running code on Judge0' });
+          },
+        });
+      },
+      error: (err) => {
+        this.runLoading = false;
+        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error running code on Judge0' });
+      },
+    });
+
+    // Handle Judge0 callback
+
+    // Broadcast results through socket
+
+    // Display results
   }
 }
