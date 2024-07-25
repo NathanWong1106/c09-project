@@ -1,4 +1,7 @@
 import uniqolor from 'uniqolor';
+import { createAbsolutePositionFromRelativePosition, createRelativePositionFromTypeIndex } from 'yjs';
+import { Position } from 'monaco-editor';
+import { Doc } from 'yjs';
 
 /**
  * Update or create the style in the head for the given clients.
@@ -39,3 +42,37 @@ export const injectStyleForClients = (clients: number[]) => {
   }
   document.head.appendChild(style);
 };
+
+/**
+ * create a new relative position from a monaco position
+ * @param editor monaco editor
+ * @param position monaco position
+ * @returns Y.RelativePosition
+ */
+export function createRelativePosFromMonacoPos(editor: any, position: Position, doc: Doc) {
+  const relPos = createRelativePositionFromTypeIndex(
+    doc.getText('content'),
+    editor.getModel().getOffsetAt(position)
+  );
+  return relPos;
+}
+
+/**
+ * create a new monaco position from a relative position
+ * @param editor monaco editor
+ * @param relPos relative position as a string
+ * @returns monaco position
+ */
+export function createMonacoPosFromRelativePos(editor: any, relPos: string, doc: Doc) {
+  const decodedRelPos = JSON.parse(relPos);
+  const absPos = createAbsolutePositionFromRelativePosition(
+    decodedRelPos,
+    doc
+  );
+  if (absPos !== null && absPos.type === doc.getText('content')) {
+    const model = editor.getModel();
+    const pos = model.getPositionAt(absPos.index);
+    return pos;
+  }
+  return null;
+}

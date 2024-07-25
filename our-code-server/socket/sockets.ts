@@ -1,5 +1,6 @@
 import { Server, Socket } from "socket.io";
 import { SessionSocket } from "../interfaces/sessions/userSession.interface";
+import { Comment } from "../interfaces/comments/comments.interface";
 import {
   getFileContent,
   getYDocFromFile,
@@ -65,36 +66,6 @@ export class YjsFileSocket {
         socket.leave(fileId);
         for (const event of socketUpdateEvents) {
           socket.removeAllListeners(event);
-        }
-      });
-
-      socket.on(
-        "create-comment",
-        async (content: string, relPos: string, fileId: string) => {
-          if (
-            await hasPermsForFile(
-              parseInt(fileId),
-              sessionSocket.request.session?.user.id
-            )
-          ) {
-            this.createComment(
-              content,
-              relPos,
-              sessionSocket.request.session?.user.id,
-              parseInt(fileId)
-            );
-          }
-        }
-      );
-
-      socket.on("delete-comment", async (commentId: number, fileId: string) => {
-        if (
-          await hasPermsForFile(
-            parseInt(fileId),
-            sessionSocket.request.session?.user.id
-          )
-        ) {
-          this.deleteComment(commentId, parseInt(fileId));
         }
       });
     });
@@ -229,27 +200,22 @@ export class YjsFileSocket {
   }
 
   /**
-   * Create a comment for the given file
-   * @param content the content of the comment
-   * @param relPos the relative position of the comment
-   * @param userId the id of the user creating the comment
+   * add new comment to the document
+   * @param comment the comment to create
    * @param fileId the id of the file the comment is on
    */
-  private async createComment(
-    content: string,
-    relPos: string,
-    userId: number,
-    fileId: number
+  public async newComment(
+    newComment: Comment,
+    fileId: number,
   ) {
     const doc = this.documents.get(fileId.toString());
     if (!doc) {
       return;
     }
-
+    
     // Save the comment to the database
-    let comment = await createComment(content, relPos, userId, fileId);
     const comments = doc.getArray("comments");
-    comments.push([comment]);
+    comments.push([newComment]);
 
     // Save the document to the database
     await this.saveDoc(fileId.toString(), doc);
@@ -260,14 +226,11 @@ export class YjsFileSocket {
    * @param commentId the id of the comment to delete
    * @param fileId the id of the file the comment is on
    */
-  private async deleteComment(commentId: number, fileId: number) {
+  public async deleteComment(commentId: number, fileId: number) {
     const doc = this.documents.get(fileId.toString());
     if (!doc) {
       return;
     }
-
-    // Delete the comment from the database
-    await deleteComment(commentId);
 
     const comments = doc.getArray("comments");
     const commentIndex = comments
@@ -279,6 +242,53 @@ export class YjsFileSocket {
 
     // Save the document to the database
     await this.saveDoc(fileId.toString(), doc);
+  }
+
+  /**
+   * Like a comment
+   * @param commentId the id of the comment to like
+   * @param likeFlag True if the comment is liked, false if remove like
+   */
+  public async likeComment(commentId: number, fileId: number, likeFlag: boolean) {
+    const doc = this.documents.get(fileId.toString());
+    if (!doc) {
+      return;
+    }
+    const comments = doc.getArray("comments");
+    const commentIdx = comments.toArray().findIndex((c: any) => c.id === commentId);
+    const likedComment: Comment = comments.get(commentIdx) as Comment;
+    if (likeFlag) {
+      likedComment.likes++;
+    } else {
+      likedComment.likes--;
+    }
+    doc.transact(() => {
+      comments.delete(commentIdx, 1);
+      comments.insert(commentIdx, [likedComment]);
+    });
+  }
+
+  /**
+   * Dislike a comment
+   * @param commentId the id of the comment to dislike
+   */
+  public async dislikeComment(commentId: number, fileId: number, likeFlag: boolean) {
+    const doc = this.documents.get(fileId.toString());
+    if (!doc) {
+      return;
+    }
+    const comments = doc.getArray("comments");
+    const commentIdx = comments.toArray().findIndex((c: any) => c.id === commentId);
+    const dislikedComment: Comment = comments.get(commentIdx) as Comment;
+    if (likeFlag) {
+      dislikedComment.dislikes++;
+    } else {
+      dislikedComment.dislikes--;
+    }
+    doc.transact(() => {
+      comments.delete(commentIdx, 1);
+      comments.insert(commentIdx, [dislikedComment]);
+    });
   }
 
   private async initDoc(doc: Doc, fileId: string): Promise<void> {

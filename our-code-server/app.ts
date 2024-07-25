@@ -4,11 +4,13 @@ import "dotenv/config";
 import authRouter from "./routers/auth.router";
 import workspaceRouter from "./routers/workspace.router";
 import sharedWorkspaceRouter from "./routers/sharedworkspace.router";
+import commentRouter from "./routers/comment.router";
 import fileRouter from "./routers/file-sys.router";
 import session from "express-session";
 import http from "http";
 import { Server } from "socket.io";
 import { YjsFileSocket } from "./socket/sockets";
+import { isAuthenticated } from "./middleware/auth.middleware";
 
 const app = express();
 const httpServer = http.createServer(app);
@@ -53,15 +55,16 @@ fileSocket.init();
 
 const PORT = process.env.PORT || 3000;
 
-app.use("/auth", authRouter);
-app.use("/api/workspace", workspaceRouter);
-app.use("/api/sharedworkspace", sharedWorkspaceRouter);
-app.use("/api/fs", fileRouter);
-
 app.use(function (req, res, next) {
   req.io = fileSocket;
   next();
 });
+
+app.use("/auth", authRouter);
+app.use("/api/workspace", workspaceRouter);
+app.use("/api/sharedworkspace", sharedWorkspaceRouter);
+app.use("/api/fs", fileRouter);
+app.use("/api/comment", isAuthenticated, commentRouter);
 
 httpServer.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

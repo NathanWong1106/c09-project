@@ -18,6 +18,7 @@ import { injectStyleForClients } from '../../utils/monaco.utils';
 import { AuthService } from '../auth/auth.service';
 import { User } from '../auth/auth.interface';
 import { Collaborator } from './filesync.interface';
+import { Position } from 'monaco-editor';
 
 @Injectable({
   providedIn: 'root',
@@ -105,69 +106,6 @@ export class FileSyncService {
     if (this.user) {
       this.awareness.setLocalStateField('user', this.user);
     }
-  }
-
-  /**
-   * Create a comment for the given file
-   * @param content the content of the comment
-   * @param offset the offset of the comment
-   * @param userId the id of the user creating the comment
-   * @param fileId the id of the file the comment is on
-   */
-  public createComment(content: string, relPos: any, fileId: string) {
-    const encodedRelPos = JSON.stringify(relPos);
-    this.socket.emit('create-comment', content, encodedRelPos, fileId);
-  }
-
-  /**
-   * Delete a comment for the given file
-   * @param commentId the id of the comment
-   */
-  public deleteComment(commentId: number, fileId: string) {
-    this.socket.emit('delete-comment', commentId, fileId);
-  }
-
-  /**
-   * Get comments for the given file
-   * @param fileId the id of the file
-   */
-  public getComments(fileId: number) {
-    this.socket.emit('get-comments', fileId);
-  }
-
-  /**
-   * @param {monaco.editor.IStandaloneCodeEditor} editor
-   * @param {monaco.editor.ITextModel} monacoModel
-   * @param {Y.Text} type
-   */
-  public createRelativePosFromMonacoPos(editor: any, monacoModel: any) {
-    const relPos = createRelativePositionFromTypeIndex(
-      this.doc.getText('content'),
-      monacoModel.getOffsetAt(editor.getPosition())
-    );
-    return relPos;
-  }
-
-  /**
-   *
-   * @param editor
-   * @param type
-   * @param relPos
-   * @param doc
-   * @returns
-   */
-  public createMonacoPosFromRelativePos(editor: any, relPos: any) {
-    const decodedRelPos = JSON.parse(relPos);
-    const absPos = createAbsolutePositionFromRelativePosition(
-      decodedRelPos,
-      this.doc
-    );
-    if (absPos !== null && absPos.type === this.doc.getText('content')) {
-      const model = editor.getModel();
-      const pos = model.getPositionAt(absPos.index);
-      return pos;
-    }
-    return null;
   }
 
   /**

@@ -48,7 +48,7 @@ export const createComment = async (content: string, relPos: string, userId: num
     }),
   ])
   
-  return {content: comment[0].content, relPos: comment[0].relPos, user: comment[1], id: comment[0].id};
+  return {content: comment[0].content, relPos: comment[0].relPos, user: comment[1], id: comment[0].id, likes: 0, dislikes: 0};
 };
 
 export const deleteComment = async (commentId: number) => {

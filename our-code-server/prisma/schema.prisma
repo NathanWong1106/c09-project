@@ -20,6 +20,7 @@ model User {
   workspaces Workspace[]
   sharedWorkspaces SharedWorkspace[]
   comments Comments[]
+  commentImpressions CommentImpressions[]
 }
 
 model Workspace {
@@ -74,4 +75,21 @@ model Comments {
   fileId    Int
   relPos    String
   createdAt DateTime @default(now())
+  impressions CommentImpressions[]
+}
+
+model CommentImpressions {
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  comment   Comments @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  commentId Int
+  type      ImpressionType
+  createdAt DateTime @default(now())
+
+  @@id([userId, commentId])
+}
+
+enum ImpressionType {
+  LIKE
+  DISLIKE
 }
