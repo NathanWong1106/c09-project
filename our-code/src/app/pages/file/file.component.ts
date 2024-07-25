@@ -4,6 +4,7 @@ import {
   createRelativePosFromMonacoPos,
   createMonacoPosFromRelativePos,
 } from '../../shared/utils/monaco.utils';
+import { TreeTableModule } from 'primeng/treetable';
 import { CommentLikesService } from '../../shared/services/comments/commentslikes.service';
 import { CommentService } from '../../shared/services/comments/comments.service';
 import { ActivatedRoute } from '@angular/router';
@@ -22,6 +23,7 @@ import { AvatarModule } from 'primeng/avatar';
 import { AvatarGroupModule } from 'primeng/avatargroup';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { Collaborator } from '../../shared/services/filesync/filesync.interface';
+import { injectStyleforComments } from '../../shared/utils/monaco.utils';
 import uniqolor from 'uniqolor';
 
 @Component({
@@ -39,6 +41,7 @@ import uniqolor from 'uniqolor';
     AvatarModule,
     AvatarGroupModule,
     OverlayPanelModule,
+    TreeTableModule,
   ],
   templateUrl: './file.component.html',
   styleUrl: './file.component.css',
@@ -112,6 +115,8 @@ export class FileComponent implements OnInit, OnDestroy {
   }
 
   onEditorInit(editor: any) {
+    injectStyleforComments();
+
     this.binding = new MonacoBinding(
       this.fileSyncService.doc.getText('content'),
       editor.getModel(),
@@ -173,7 +178,7 @@ export class FileComponent implements OnInit, OnDestroy {
         let domNode = document.createElement('div');
         viewZoneId = changeAccessor.addZone({
           afterLineNumber: absPos.lineNumber,
-          heightInLines: 4,
+          heightInLines: 5,
           domNode: domNode,
           onDomNodeTop: (top: string) => {
             overlayDomNode.style.top = top + 'px';
@@ -243,27 +248,29 @@ export class FileComponent implements OnInit, OnDestroy {
   }
 
   createCommentElement(comment: any) {
-    /**
-     * This was the only way :(
-     * 
-     * Monaco View Zones require a DOM element to be passed in as the domNode property
-     */
-
     let commentElement = document.createElement('div');
 
     commentElement.innerHTML = `
-      <div style="color: black; width: 84vw; background-color: white; border: 1px solid black; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 5px; border-radius: 5px; z-index: 1000;">
-        <div id="buttonRow" style="display: flex; width: 100%; justify-content: space-between; margin-bottom: 5px; align-items: center">
-          <span id="userEmail${comment.id}" style="font-weight: bold;"></span>
-          <div>
-            <button id="likeButton${comment.id}" style="font-size: 20px; margin-top: 5px; background-color: green; color: white; border: none; border-radius: 5px; cursor: pointer;" id="likeButton">&#8679;</button>
-            <span id="likeCount${comment.id}">${comment.likes}</span>
-            <button id="dislikeButton${comment.id}" style="font-size: 20px; margin-top: 5px; background-color: red; color: white; border: none; border-radius: 5px; cursor: pointer;" id="dislikeButton">&#8681;</button>
-            <span id="dislikeCount${comment.id}">${comment.dislikes}</span>
-            <button id="deleteButton${comment.id}" class="button" style="font-size: 20px; margin-top: 5px; background-color: red; color: white; border: none; border-radius: 5px; cursor: pointer;" id="deleteButton">&times;</button>
+      <div class="comment row">
+        <div class="col-11 user-content">
+          <span id="userEmail${comment.id}" class="comment-email"></span>
+          <div id="content${comment.id}" class="comment-content"></div>
+        </div>
+        <div class="col-1 button-col">
+          <div class="end">
+            <button id="deleteButton${comment.id}" class="delete button" id="deleteButton">&times;</button>
+          </div>
+          <div class="button-row">
+            <div>
+              <button id="likeButton${comment.id}" class="like button" id="likeButton">&#8679;</button>
+              <span id="likeCount${comment.id}" class="count">${comment.likes}</span>
+            </div>
+            <div>
+            <button id="dislikeButton${comment.id}" class="dislike button" id="dislikeButton">&#8681;</button>
+            <span id="dislikeCount${comment.id}" class="count">${comment.dislikes}</span>
+            </div>
           </div>
         </div>
-        <div id="content${comment.id}" style="max-height: 50px; overflow-y: auto; width: 100%"></div>
       </div>
     `;
 

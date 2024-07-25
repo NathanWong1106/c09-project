@@ -21,6 +21,12 @@
   </ng-template>
   <ng-template pTemplate="end">
     <div class="flex align-items-center gap-2">
+      @if (isDarkMode) {
+        <i class="pi pi-moon"></i>
+      } @else {
+        <i class="pi pi-sun"></i>
+      }
+      <p-inputSwitch [ngModel]="isDarkMode" (ngModelChange)="toggleLightDarkMode()" />
       @if (isAuth) {
         <p-avatar
           class="user-avatar"
