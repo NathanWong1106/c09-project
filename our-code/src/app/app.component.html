@@ -2,6 +2,18 @@
   <app-header></app-header>
   <p-toast></p-toast>
 </main>
-<router-outlet />
+<div class="min-h-screen">
+  <router-outlet />
+</div>
+<div class="w-full text-center flex flex-column align-items-center justify-content-center">
+  <p-button
+    label="credits"
+    [routerLink]="['/credits']"
+    [routerLinkActiveOptions]="{ exact: true }"
+    [routerLinkActive]="['router-link-active']"
+    [link]="true"
+  />
+  <h1 class="text-xl font-semibold">Made with tears by Team 🍴 🔥 🍞</h1>
+</div>
 
 <link rel="stylesheet" href="https://unpkg.com/primeflex@latest/primeflex.css">     

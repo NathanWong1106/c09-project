@@ -48,6 +48,10 @@ export class HeaderComponent implements OnInit {
         this.isAuth = false;
       }
     });
+
+    if (this.userPrefersDark()) {
+      this.toggleLightDarkMode();
+    }
   }
 
   ngOnInit(): void {
@@ -94,5 +98,9 @@ export class HeaderComponent implements OnInit {
       linkRef.href = 'theme-light.css';
       this.isDarkMode = false;
     }
+  }
+
+  userPrefersDark() {
+    return window?.matchMedia?.('(prefers-color-scheme: dark)').matches;
   }
 }
