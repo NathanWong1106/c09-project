@@ -30,7 +30,7 @@
             label="Create file/folder"
             rounded="true"
             [style]="{ 'margin-top': '10px', 'margin-right': '10px' }"
-            (click)="hasPerms ? showDialog() : null"
+            (click)="this.selectedItem = null; hasPerms ? showDialog() : null"
           />
         </div>
       </ng-template>
@@ -95,7 +95,7 @@
     <div
       class="flex align-items-center form-input justify-content-around gap-3 mb-3"
     >
-      <label for="filename" class="font-semibold w-6rem">File name</label>
+      <label for="filename" class="font-semibold w-6rem">Name</label>
       <input
         pInputText
         formControlName="filename"
@@ -105,7 +105,7 @@
       />
     </div>
     <div class="flex align-items-center gap-3 mb-5">
-      <label for="filetype" class="font-semibold w-6rem">File type</label>
+      <label for="filetype" class="font-semibold w-6rem">Type</label>
       <p-dropdown
         id="filetype"
         formControlName="filetype"
