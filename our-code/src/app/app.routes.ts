@@ -5,11 +5,16 @@ import { FileSysComponent } from './pages/file-sys/file-sys.component';
 import { SharedWorkspaceComponent } from './pages/sharedworkspace/sharedworkspace.component';
 import { AuthGuard } from './guards/auth.guards';
 import { FileComponent } from './pages/file/file.component';
+import { CreditsComponent } from './pages/credits/credits.component';
 
 export const routes: Routes = [
   {
     path: 'sign-in',
     component: SignInComponent,
+  },
+  {
+    path: 'credits',
+    component: CreditsComponent,
   },
   {
     path: 'workspaces',

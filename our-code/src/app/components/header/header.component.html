@@ -26,7 +26,11 @@
       } @else {
         <i class="pi pi-sun"></i>
       }
-      <p-inputSwitch [ngModel]="isDarkMode" (ngModelChange)="toggleLightDarkMode()" />
+      <p-inputSwitch 
+        [ngModel]="isDarkMode" 
+        (ngModelChange)="toggleLightDarkMode()"
+        class="mr-4"
+      />
       @if (isAuth) {
         <p-avatar
           class="user-avatar"

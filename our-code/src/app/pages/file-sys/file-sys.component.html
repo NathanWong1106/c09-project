@@ -3,25 +3,6 @@
   href="https://unpkg.com/primeflex@latest/primeflex.css"
 />
 
-<p-menubar>
-  <ng-template pTemplate="start" class="flex">
-    <div class="flex">
-      <h2>{{ workspaceName }}</h2>
-    </div>
-  </ng-template>
-  <ng-template pTemplate="end">
-    <div class="flex">
-      <p-button
-        [disabled]="!hasPerms"
-        icon="pi pi-plus"
-        label="Create file/folder"
-        rounded="true"
-        [style]="{ 'margin-top': '10px', 'margin-right': '10px' }"
-        (click)="hasPerms ? showDialog() : null"
-      />
-    </div>
-  </ng-template>
-</p-menubar>
 <p-treeTable
   [lazy]="true"
   [columns]="cols"
@@ -34,6 +15,27 @@
   [scrollable]="true"
   [tableStyle]="{ 'min-width': '50rem' }"
 >
+  <ng-template pTemplate="caption">
+    <p-menubar>
+      <ng-template pTemplate="start" class="flex">
+        <div class="flex">
+          <h2>{{ workspaceName }}</h2>
+        </div>
+      </ng-template>
+      <ng-template pTemplate="end">
+        <div class="flex">
+          <p-button
+            [disabled]="!hasPerms"
+            icon="pi pi-plus"
+            label="Create file/folder"
+            rounded="true"
+            [style]="{ 'margin-top': '10px', 'margin-right': '10px' }"
+            (click)="hasPerms ? showDialog() : null"
+          />
+        </div>
+      </ng-template>
+    </p-menubar>
+  </ng-template>
   <ng-template pTemplate="header" class="" let-columns>
     <tr>
       <th *ngFor="let col of columns">
