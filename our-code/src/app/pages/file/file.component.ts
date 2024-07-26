@@ -276,8 +276,6 @@ export class FileComponent implements OnInit, OnDestroy {
   submitCode() {
     const fileId = this.activatedRoute.snapshot.params['id'];
     this.isRunning = true;
-    this.messageService.add({ severity: 'info', summary: 'Running Code', detail: 'Running code on Judge0' });
-    let res = null;
 
     this.judge0Service.submitCode(fileId, this.code, 71, this.consoleInput).subscribe({
       next: (res: any) => {
