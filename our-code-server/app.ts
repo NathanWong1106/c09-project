@@ -6,6 +6,7 @@ import workspaceRouter from "./routers/workspace.router";
 import sharedWorkspaceRouter from "./routers/sharedworkspace.router";
 import commentRouter from "./routers/comment.router";
 import fileRouter from "./routers/file-sys.router";
+import judge0Router from "./routers/judge0.router";
 import session from "express-session";
 import http from "http";
 import { Server } from "socket.io";
@@ -64,6 +65,7 @@ app.use("/auth", authRouter);
 app.use("/api/workspace", workspaceRouter);
 app.use("/api/sharedworkspace", sharedWorkspaceRouter);
 app.use("/api/fs", fileRouter);
+app.use("/api/judge0", judge0Router);
 app.use("/api/comment", isAuthenticated, commentRouter);
 
 httpServer.listen(PORT, () => {

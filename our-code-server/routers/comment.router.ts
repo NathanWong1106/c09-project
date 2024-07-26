@@ -11,13 +11,13 @@ import {
   createComment,
   deleteComment,
 } from "../db/commentdb.util";
-import { hasPermissionForFile, isAuthenticated } from "../middleware/auth.middleware";
+import { queryHasPermsForFile, isAuthenticated } from "../middleware/auth.middleware";
 import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 import { ImpressionType } from "@prisma/client";
 
 const commentRouter = Router();
 
-commentRouter.post("/", hasPermissionForFile, async (req, res) => {
+commentRouter.post("/", queryHasPermsForFile, async (req, res) => {
   const userId = req.session.user!.id;
   const fileId = parseInt(req.query.fileId as string);
   const relPos = req.body.relPos;
@@ -35,7 +35,7 @@ commentRouter.post("/", hasPermissionForFile, async (req, res) => {
   }
 });
 
-commentRouter.delete("/", hasPermissionForFile, async (req, res) => {
+commentRouter.delete("/", queryHasPermsForFile, async (req, res) => {
   const commentId = parseInt(req.query.commentId as string);
   const fileId = parseInt(req.query.fileId as string);
   if (!commentId) {
@@ -51,7 +51,7 @@ commentRouter.delete("/", hasPermissionForFile, async (req, res) => {
   }
 });
 
-commentRouter.get("/impression", hasPermissionForFile, async (req, res) => {
+commentRouter.get("/impression", queryHasPermsForFile, async (req, res) => {
   const commentId = parseInt(req.query.commentId as string);
   if (!commentId) {
     return res.status(400).json({ error: "Comment ID is required" });
@@ -66,7 +66,7 @@ commentRouter.get("/impression", hasPermissionForFile, async (req, res) => {
   }
 });
 
-commentRouter.post("/like", hasPermissionForFile, async (req, res) => {
+commentRouter.post("/like", queryHasPermsForFile, async (req, res) => {
   const userId = req.session.user!.id;
   const fileId = parseInt(req.query.fileId as string);
   const commentId = parseInt(req.query.commentId as string);
@@ -94,7 +94,7 @@ commentRouter.post("/like", hasPermissionForFile, async (req, res) => {
   }
 });
 
-commentRouter.post("/dislike", hasPermissionForFile, async (req, res) => {
+commentRouter.post("/dislike", queryHasPermsForFile, async (req, res) => {
   const userId = req.session.user!.id;
   const fileId = parseInt(req.query.fileId as string);
   const commentId = parseInt(req.query.commentId as string);

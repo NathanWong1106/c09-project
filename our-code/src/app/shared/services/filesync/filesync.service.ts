@@ -46,7 +46,9 @@ export class FileSyncService {
    */
   public joinFile(
     fileId: string,
-    presenceUpdate: (connectedUsers: Collaborator[]) => void
+    presenceUpdate: (connectedUsers: Collaborator[]) => void,
+    onSubmission: () => void,
+    onSubmissionResult: (result: any) => void
   ) {
     // Join the file room
     this.socket.emit('join-file', fileId);
@@ -56,12 +58,12 @@ export class FileSyncService {
       const updateArr = new Uint8Array(update);
       applyUpdate(this.doc, updateArr);
     });
-
+    
     // Listen for awareness updates from other users
     this.socket.on('awareness-update', (update: Uint8Array) => {
       const updateArr = new Uint8Array(update);
       applyAwarenessUpdate(this.awareness, updateArr, this);
-
+      
       const collaborators: Collaborator[] = [];
       this.awareness.getStates().forEach((state, clientId) => {
         if (state['user'] && clientId !== this.doc.clientID) {
@@ -71,9 +73,18 @@ export class FileSyncService {
           });
         }
       });
-
+      
       // Pass the connected users to the component
       presenceUpdate(Array.from(collaborators.values()));
+    });
+
+    this.socket.on('submit-code', () => {
+      onSubmission();
+    });
+    
+    //
+    this.socket.on('submission-result', (result: any) => {
+      onSubmissionResult(result);
     });
 
     // When we update the document, send the update to the server
@@ -118,6 +129,8 @@ export class FileSyncService {
     removeAwarenessStates(this.awareness, [this.doc.clientID], this);
     this.socket.emit('leave-file', fileId);
     this.socket.removeAllListeners('file-update');
+    this.socket.removeAllListeners('submit-code');
+    this.socket.removeAllListeners('submission-result');
     this.doc.destroy();
     this.awareness.destroy();
     this.doc = new Doc();

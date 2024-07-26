@@ -7,6 +7,7 @@
       <ng-template pTemplate="end">
         <div class="pr-5">
           <p-button pTooltip="Collaborators" tooltipPosition="bottom" (onClick)="collaboratorsOp.toggle($event)" icon="pi pi-users" />
+          <p-button label="Run" class="ml-3" [loading]="isRunning" (onClick)="submitCode()" icon="pi pi-play-circle"/>
           <p-overlayPanel #collaboratorsOp>
             <div>
               <span class="font-medium text-900 block mb-4">Collaborators</span>
@@ -68,7 +69,33 @@
     </p-dialog>
   </ng-template>
   <ng-template pTemplate>
-    <div>Output from Judge0</div>
+    <p-splitter
+      class="h-full w-full"
+      [panelSizes]="[50, 50]"
+      [minSizes]="[25, 25]"
+      layout="horizontal"
+    >
+      <ng-template pTemplate>
+        <div class="h-full w-full">
+          Input:
+          <textarea
+            class="h-full w-full"
+            [(ngModel)]="consoleInput"
+            [disabled]="isRunning"
+          ></textarea>
+        </div>
+      </ng-template>
+      <ng-template pTemplate class="h-full flex">
+        <div class="h-full w-full">
+          Output:
+          <textarea
+            class="h-full w-full"
+            [(ngModel)]="consoleOutput"
+            [disabled]="true"
+          ></textarea>
+        </div>
+      </ng-template>
+    </p-splitter>
   </ng-template>
 </p-splitter>
 }

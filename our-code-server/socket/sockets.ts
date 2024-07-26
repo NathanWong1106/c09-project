@@ -27,6 +27,7 @@ export class YjsFileSocket {
   private documents: Map<string, Doc> = new Map();
   private documentClocks: Map<string, number> = new Map();
   private documentAwareness: Map<string, Awareness> = new Map();
+  private fileSubmissions: Map<string, string> = new Map();
 
   constructor(private io: Server) {
     this.io = io;
@@ -98,10 +99,11 @@ export class YjsFileSocket {
    *
    * @param socket The socket to initialize
    * @param fileId The file id to initialize the socket with
+   * @param submitToken The token corresponding to a submission to Judge0
    */
   private async initSocketWithDoc(
     socket: Socket,
-    fileId: string
+    fileId: string,
   ): Promise<void> {
     // Get the document for the file or create a new one if it does not exist
     const doc = await this.getOrCreateDoc(fileId);
@@ -290,6 +292,38 @@ export class YjsFileSocket {
       comments.insert(commentIdx, [dislikedComment]);
     });
   }
+
+  /**
+   * Maps a file id to a submission token
+   * @param fileId the id of the file
+   * @param token the token of the submission
+   * @returns true if the submission was set, false otherwise
+   */
+  public setSubmission(fileId: string, token: string): boolean {
+    if (!this.fileSubmissions.has(fileId)) {
+      this.fileSubmissions.set(fileId, token);
+      this.io.to(fileId).emit('submit-code');
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Checks if a submission exists for a file id
+   * @param fileId the id of the file
+   * @returns true if a submission exists, false otherwise
+   */
+  public hasSubmission(fileId: string): boolean {
+    return this.fileSubmissions.has(fileId);
+  }
+
+  public broadcastSubmission(fileId: string, token: string, stdin: string, stdout: string, stderr: string, exit_code: number, success: boolean): void {
+    if (this.fileSubmissions.get(fileId) === token) {
+      this.io.to(fileId).emit("submission-result", { stdin: stdin, stdout: stdout, stderr: stderr, exit_code: exit_code, success: success });
+      this.fileSubmissions.delete(fileId);
+    }
+  }
+
 
   private async initDoc(doc: Doc, fileId: string): Promise<void> {
     const text = doc.getText("content");

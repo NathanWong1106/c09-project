@@ -13,7 +13,7 @@ export const isAuthenticated = (
   }
 };
 
-export const hasPermissionForFile = async (
+export const queryHasPermsForFile = async (
   req: Request,
   res: Response,
   next: NextFunction,
@@ -24,6 +24,26 @@ export const hasPermissionForFile = async (
   if (
     await hasPermsForFile(
       parseInt(req.query.fileId as string),
+      req.session.user!.id
+    )
+  ) {
+    next();
+  } else {
+    return res.status(403).json({ error: "Permission denied" });
+  }
+}
+
+export const bodyHasPermsForFile = async (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) => {
+  if (!req.body.fileId) {
+    return res.status(400).json({ error: "File ID is required" });
+  }
+  if (
+    await hasPermsForFile(
+      parseInt(req.body.fileId as string),
       req.session.user!.id
     )
   ) {

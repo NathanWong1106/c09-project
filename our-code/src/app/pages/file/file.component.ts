@@ -7,6 +7,7 @@ import {
 import { TreeTableModule } from 'primeng/treetable';
 import { CommentLikesService } from '../../shared/services/comments/commentslikes.service';
 import { CommentService } from '../../shared/services/comments/comments.service';
+import { Judge0Service } from '../../shared/services/judge0/judge0.service';
 import { ActivatedRoute } from '@angular/router';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
 import { FormsModule } from '@angular/forms';
@@ -43,6 +44,7 @@ import uniqolor from 'uniqolor';
     OverlayPanelModule,
     TreeTableModule,
   ],
+  providers: [],
   templateUrl: './file.component.html',
   styleUrl: './file.component.css',
 })
@@ -60,6 +62,9 @@ export class FileComponent implements OnInit, OnDestroy {
   monacoLoaded: boolean = false;
   fileName: string = '';
   collaborators: Collaborator[] = [];
+  isRunning: boolean = false;
+  consoleInput: string = '';
+  consoleOutput: string = '';
 
   constructor(
     private fileSyncService: FileSyncService,
@@ -68,7 +73,8 @@ export class FileComponent implements OnInit, OnDestroy {
     private commentLikesService: CommentLikesService,
     private ngZone: NgZone,
     private fileService: FileService,
-    private commentService: CommentService
+    private commentService: CommentService,
+    private judge0Service: Judge0Service,
   ) {}
 
   ngOnInit(): void {
@@ -90,7 +96,7 @@ export class FileComponent implements OnInit, OnDestroy {
       });
     });
 
-    this.fileSyncService.joinFile(this.activatedRoute.snapshot.params['id'], this.presenceUpdate.bind(this));
+    this.fileSyncService.joinFile(this.activatedRoute.snapshot.params['id'], this.presenceUpdate.bind(this), this.onSubmission.bind(this), this.onSubmissionResult.bind(this));
     window.addEventListener('beforeunload', () => {
       this.fileSyncService.leaveFile(this.activatedRoute.snapshot.params['id']);
     });
@@ -146,6 +152,22 @@ export class FileComponent implements OnInit, OnDestroy {
       
       run: (ed: any) =>  this.ngZone.run(() => this.showCreateComments(ed))
     });
+  }
+
+  onSubmission() {
+    this.isRunning = true;
+  }
+
+  onSubmissionResult(result: any) {
+    this.isRunning = false;
+    if (result.success) {
+      this.messageService.add({ severity: 'success', summary: 'Code Ran', detail: 'Code ran successfully' });
+      this.consoleOutput = "Input:\n" + result.stdin + "\n\nOutput:\n" + result.stdout + "\n\nError:" + result.stderr
+      + "\n\nExit Code: " + result.exit_code;
+    }
+    else {
+      this.messageService.add({ severity: 'error', summary: 'Code Failed', detail: 'Code failed to run' });
+    }
   }
 
   loadComments(editor: any) {
@@ -282,5 +304,25 @@ export class FileComponent implements OnInit, OnDestroy {
     contentElement!.textContent = comment.content;
      
     return commentElement;
+  }
+
+  submitCode() {
+    const fileId = this.activatedRoute.snapshot.params['id'];
+    this.isRunning = true;
+
+    this.judge0Service.submitCode(fileId, this.code, 71, this.consoleInput).subscribe({
+      next: (res: any) => {
+        this.messageService.add({ severity: 'success', summary: 'Code Submitted', detail: 'Code submitted to Judge0' });
+      },
+      error: (err) => {
+        if (err.status >= 500) {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Server Error' });
+        }
+        else {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error });
+        }
+        this.isRunning = false;
+      },
+    });
   }
 }
