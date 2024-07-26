@@ -129,6 +129,8 @@ export class FileSyncService {
     removeAwarenessStates(this.awareness, [this.doc.clientID], this);
     this.socket.emit('leave-file', fileId);
     this.socket.removeAllListeners('file-update');
+    this.socket.removeAllListeners('submit-code');
+    this.socket.removeAllListeners('submission-result');
     this.doc.destroy();
     this.awareness.destroy();
     this.doc = new Doc();
