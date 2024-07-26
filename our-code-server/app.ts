@@ -5,6 +5,7 @@ import authRouter from "./routers/auth.router";
 import workspaceRouter from "./routers/workspace.router";
 import sharedWorkspaceRouter from "./routers/sharedworkspace.router";
 import fileRouter from "./routers/file-sys.router";
+import judge0Router from "./routers/judge0.router";
 import session from "express-session";
 import http from "http";
 import { Server } from "socket.io";
@@ -53,15 +54,16 @@ fileSocket.init();
 
 const PORT = process.env.PORT || 3000;
 
-app.use("/auth", authRouter);
-app.use("/api/workspace", workspaceRouter);
-app.use("/api/sharedworkspace", sharedWorkspaceRouter);
-app.use("/api/fs", fileRouter);
-
 app.use(function (req, res, next) {
   req.io = fileSocket;
   next();
 });
+
+app.use("/auth", authRouter);
+app.use("/api/workspace", workspaceRouter);
+app.use("/api/sharedworkspace", sharedWorkspaceRouter);
+app.use("/api/fs", fileRouter);
+app.use("/api/judge0", judge0Router);
 
 httpServer.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);

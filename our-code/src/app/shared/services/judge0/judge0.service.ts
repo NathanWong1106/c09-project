@@ -8,42 +8,27 @@ import io from 'socket.io-client';
 })
 
 export class Judge0Service {
-  private endpoint = "https://ce.judge0.com";
+  private endpoint = environment.apiEndpoint;
   private socket = io(environment.apiEndpoint, {
     withCredentials: true,
   });
 
   constructor(private http: HttpClient) {}
-
-  checkJudge0Auth() {
-    // check if auth is valid
-    return this.http.get(
-      this.endpoint +`/authenticate`,
-      {
-        withCredentials: true,
-      },
-    );
-  }
-
-  broadcastSubmission(fileId: number) {
-    // Emit through socket
-    this.socket.emit('submit-code', fileId);
-  }
-
   
   submitCode(fileId: number, code: string, languageId: number, stdin: string) {
-    // submit code
+    // Notify room of submission
+    this.socket.emit('submit-code', fileId);
+    
     return this.http.post(
-      this.endpoint + `/submissions?base64_encoded=false&wait=false`,
+      `${this.endpoint}/api/judge0/${fileId}/submit`,
       {
-        source_code: code,
-        language_id: languageId,
-        stdin: stdin,
-        callback_url: `${environment.apiEndpoint}/api/judge0/callback/${fileId}`,
+        code,
+        languageId,
+        stdin 
       },
       {
         withCredentials: true,
-      },
+      }
     );
   }
 }

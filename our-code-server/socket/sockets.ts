@@ -98,27 +98,6 @@ export class YjsFileSocket {
           this.deleteComment(commentId, parseInt(fileId));
         }
       });
-
-      // Broadcast to all other users in room upon someone submitting code
-      socket.on("submit-code", async (fileId: string) => {
-        if (
-          await hasPermsForFile(
-            parseInt(fileId),
-            sessionSocket.request.session?.user.id
-          )
-        ) {
-          // Broadcast to all users in the room
-          socket.timeout(5000).broadcast.emit("code-submitted", (err, responses) => {
-            if (err) {
-              console.error(err);
-            }
-            // create mapping
-            if (!this.fileSubmissions.has(fileId)) {
-              this.fileSubmissions.set(fileId, responses);
-            }
-          });
-        }
-      })
     });
 
     // When a user leaves a room, check if the room is empty
@@ -149,10 +128,11 @@ export class YjsFileSocket {
    *
    * @param socket The socket to initialize
    * @param fileId The file id to initialize the socket with
+   * @param submitToken The token corresponding to a submission to Judge0
    */
   private async initSocketWithDoc(
     socket: Socket,
-    fileId: string
+    fileId: string,
   ): Promise<void> {
     // Get the document for the file or create a new one if it does not exist
     const doc = await this.getOrCreateDoc(fileId);
@@ -302,6 +282,37 @@ export class YjsFileSocket {
     // Save the document to the database
     await this.saveDoc(fileId.toString(), doc);
   }
+
+  /**
+   * Maps a file id to a submission token
+   * @param fileId the id of the file
+   * @param token the token of the submission
+   * @returns true if the submission was set, false otherwise
+   */
+  public setSubmission(fileId: string, token: string): boolean {
+    if (!this.fileSubmissions.has(fileId)) {
+      this.fileSubmissions.set(fileId, token);
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Checks if a submission exists for a file id
+   * @param fileId the id of the file
+   * @returns true if a submission exists, false otherwise
+   */
+  public hasSubmission(fileId: string): boolean {
+    return this.fileSubmissions.has(fileId);
+  }
+
+  public broadcastSubmission(fileId: string, token: string, stdin: string, stdout: string, stderr: string, exit_code: number): void {
+    if (this.fileSubmissions.get(fileId) === token) {
+      this.io.to(fileId).emit("submission-result", stdin, stdout, stderr, exit_code);
+      this.fileSubmissions.delete(fileId);
+    }
+  }
+
 
   private async initDoc(doc: Doc, fileId: string): Promise<void> {
     const text = doc.getText("content");

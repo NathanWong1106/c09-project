@@ -64,28 +64,32 @@
     </p-dialog>
   </ng-template>
   <ng-template pTemplate>
+    <p-button label="Run" [rounded]="true" [loading]="isRunning" (click)="submitCode()"/>
     <p-splitter
       [style]="{ height: '100%' }"
       [panelSizes]="[50, 50]"
       [minSizes]="[25, 25]"
       layout="horizontal"
     >
-      <p-button label="Run" [rounded]="true" [loading]="runLoading" (onclick)="submitCode()"/>
       <ng-template pTemplate>
-        <p-terminal
-          [style]="{backgroundColor:'var(--gray-900)', color:'var(--gray-100)'}"
-          class="h-full w-full"
-          welcomeMessage="Input"
-          [(ngModel)]="consoleInput"
-        />
+        <div class="h-full w-full">
+          Input:
+          <textarea
+            [style]="{ height: '100%', width: '100%' }"
+            [(ngModel)]="consoleInput"
+            [disabled]="isRunning"
+          ></textarea>
+        </div>
       </ng-template>
-      <ng-template pTemplate>
-        <p-terminal
-          [style]="{backgroundColor:'var(--gray-900)', color:'var(--gray-100)'}"
-          class="h-full w-full"
-          welcomeMessage="Output"
-          [(ngModel)]="consoleOutput"
-        />
+      <ng-template pTemplate [style]="{ display: 'flex', height: '100%' }">
+        <div class="h-full w-full">
+          Output:
+          <textarea
+            [style]="{ height: '100%', width: '100%' }"
+            [(ngModel)]="consoleOutput"
+            [disabled]="true"
+          ></textarea>
+        </div>
       </ng-template>
     </p-splitter>
   </ng-template>

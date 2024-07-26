@@ -17,7 +17,6 @@ import { AvatarModule } from 'primeng/avatar';
 import { AvatarGroupModule } from 'primeng/avatargroup';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { Collaborator } from '../../shared/services/filesync/filesync.interface';
-import { TerminalModule, TerminalService } from 'primeng/terminal';
 import uniqolor from 'uniqolor';
 
 @Component({
@@ -35,9 +34,8 @@ import uniqolor from 'uniqolor';
     AvatarModule,
     AvatarGroupModule,
     OverlayPanelModule,
-    TerminalModule,
   ],
-  providers: [TerminalService],
+  providers: [],
   templateUrl: './file.component.html',
   styleUrl: './file.component.css',
 })
@@ -56,8 +54,9 @@ export class FileComponent implements OnInit, OnDestroy {
   monacoLoaded: boolean = false;
   fileName: string = '';
   collaborators: Collaborator[] = [];
+  isRunning: boolean = false;
   consoleInput: string = '';
-  runLoading: boolean = false;
+  consoleOutput: string = '';
 
   constructor(
     private fileSyncService: FileSyncService,
@@ -87,7 +86,7 @@ export class FileComponent implements OnInit, OnDestroy {
       });
     });
 
-    this.fileSyncService.joinFile(this.activatedRoute.snapshot.params['id'], this.presenceUpdate.bind(this));
+    this.fileSyncService.joinFile(this.activatedRoute.snapshot.params['id'], this.presenceUpdate.bind(this), this.onSubmission.bind(this), this.onSubmissionResult.bind(this));
     window.addEventListener('beforeunload', () => {
       this.fileSyncService.leaveFile(this.activatedRoute.snapshot.params['id']);
     });
@@ -139,6 +138,16 @@ export class FileComponent implements OnInit, OnDestroy {
       
       run: (ed: any) =>  this.ngZone.run(() => this.showCreateComments(ed))
     });
+  }
+
+  onSubmission() {
+    this.isRunning = true;
+  }
+
+  onSubmissionResult(result: any) {
+    this.isRunning = false;
+    this.consoleOutput = "Input:" + result.stdin + "\nOutput:" + result.stdout + "\nError:" + result.stderr
+    + "\nExit Code:" + result.exit_code;
   }
 
   loadComments(editor: any) {
@@ -221,7 +230,6 @@ export class FileComponent implements OnInit, OnDestroy {
       fileId: this.activatedRoute.snapshot.params['id'],
     }
 
-
     this.fileSyncService.createComment(comment.content, comment.relPos, comment.fileId);
     
     this.comment = '';
@@ -261,33 +269,23 @@ export class FileComponent implements OnInit, OnDestroy {
 
   submitCode() {
     const fileId = this.activatedRoute.snapshot.params['id'];
-    this.runLoading = true;
+    this.isRunning = true;
     this.messageService.add({ severity: 'info', summary: 'Running Code', detail: 'Running code on Judge0' });
-    // Check X-Auth
-    this.judge0Service.checkJudge0Auth().subscribe({
+    let res = null;
+
+    this.judge0Service.submitCode(fileId, this.code, 71, this.consoleInput).subscribe({
       next: (res: any) => {
-        // Submit code
-        this.judge0Service.submitCode(fileId, this.code, 71, '').subscribe({
-          next: (res: any) => {
-            this.runLoading = false;
-            this.messageService.add({ severity: 'success', summary: 'Code Ran', detail: 'Code ran successfully on Judge0' });
-          },
-          error: (err) => {
-            this.runLoading = false;
-            this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error running code on Judge0' });
-          },
-        });
+        this.messageService.add({ severity: 'success', summary: 'Code Submitted', detail: 'Code submitted to Judge0' });
       },
       error: (err) => {
-        this.runLoading = false;
-        this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Error running code on Judge0' });
+        if (err.status >= 500) {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Server Error' });
+        }
+        else {
+          this.messageService.add({ severity: 'error', summary: 'Error', detail: err.error.error });
+        }
+        this.isRunning = false;
       },
     });
-
-    // Handle Judge0 callback
-
-    // Broadcast results through socket
-
-    // Display results
   }
 }
