@@ -1,9 +1,9 @@
 import { Router } from "express";
-import { isAuthenticated } from "../middleware/auth.middleware";
+import { isAuthenticated, bodyHasPermsForFile } from "../middleware/auth.middleware";
 
 const judge0Router = Router();
 
-judge0Router.post("/:fileId/submit", isAuthenticated, async (req, res) => {
+judge0Router.post("/:fileId/submit", isAuthenticated, bodyHasPermsForFile, async (req, res) => {
   const fileId = req.params.fileId;
   const code = req.body.code;
   const languageId = req.body.languageId;

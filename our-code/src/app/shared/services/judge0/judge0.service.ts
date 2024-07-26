@@ -19,6 +19,7 @@ export class Judge0Service {
     return this.http.post(
       `${this.endpoint}/api/judge0/${fileId}/submit`,
       {
+        fileId,
         code,
         languageId,
         stdin 
