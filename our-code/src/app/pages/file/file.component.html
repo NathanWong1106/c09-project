@@ -68,31 +68,39 @@
       <p-button label="Add" class="mr-2" (click)="addComment(comment)" />
     </p-dialog>
   </ng-template>
-  <ng-template pTemplate>
+  <ng-template pTemplate class="">
     <p-splitter
       class="h-full w-full"
       [panelSizes]="[50, 50]"
       [minSizes]="[25, 25]"
       layout="horizontal"
     >
-      <ng-template pTemplate>
-        <div class="h-full w-full">
-          Input:
-          <textarea
-            class="h-full w-full"
-            [(ngModel)]="consoleInput"
-            [disabled]="isRunning"
-          ></textarea>
+    <ng-template pTemplate>
+        <div class="h-full w-full flex flex-column p-2">
+          <div class="w-full">
+            Input:
+          </div>
+          <div class="h-full">
+            <textarea
+              class="h-full w-full"
+              [(ngModel)]="consoleInput"
+              [disabled]="isRunning"
+            ></textarea>
+          </div>
         </div>
       </ng-template>
       <ng-template pTemplate class="h-full flex">
-        <div class="h-full w-full">
-          Output:
-          <textarea
-            class="h-full w-full"
-            [(ngModel)]="consoleOutput"
-            [disabled]="true"
-          ></textarea>
+        <div class="h-full w-full flex flex-column p-2">
+          <div class="w-full">
+            Output:
+          </div>
+          <div class="h-full">
+            <textarea
+              class="h-full w-full"
+              [(ngModel)]="consoleOutput"
+              [disabled]="isRunning"
+            ></textarea>
+          </div>
         </div>
       </ng-template>
     </p-splitter>
