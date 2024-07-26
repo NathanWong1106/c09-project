@@ -70,7 +70,7 @@
   </ng-template>
   <ng-template pTemplate>
     <p-splitter
-      [style]="{ height: '100%' }"
+      class="h-full w-full"
       [panelSizes]="[50, 50]"
       [minSizes]="[25, 25]"
       layout="horizontal"
@@ -79,17 +79,17 @@
         <div class="h-full w-full">
           Input:
           <textarea
-            [style]="{ height: '100%', width: '100%' }"
+            class="h-full w-full"
             [(ngModel)]="consoleInput"
             [disabled]="isRunning"
           ></textarea>
         </div>
       </ng-template>
-      <ng-template pTemplate [style]="{ display: 'flex', height: '100%' }">
+      <ng-template pTemplate class="h-full flex">
         <div class="h-full w-full">
           Output:
           <textarea
-            [style]="{ height: '100%', width: '100%' }"
+            class="h-full w-full"
             [(ngModel)]="consoleOutput"
             [disabled]="true"
           ></textarea>
