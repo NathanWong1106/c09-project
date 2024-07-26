@@ -1,5 +1,12 @@
 import { Component, NgZone, OnDestroy, OnInit } from '@angular/core';
 import { FileSyncService } from '../../shared/services/filesync/filesync.service';
+import { 
+  createRelativePosFromMonacoPos,
+  createMonacoPosFromRelativePos,
+} from '../../shared/utils/monaco.utils';
+import { TreeTableModule } from 'primeng/treetable';
+import { CommentLikesService } from '../../shared/services/comments/commentslikes.service';
+import { CommentService } from '../../shared/services/comments/comments.service';
 import { Judge0Service } from '../../shared/services/judge0/judge0.service';
 import { ActivatedRoute } from '@angular/router';
 import { MonacoEditorModule } from 'ngx-monaco-editor-v2';
@@ -17,6 +24,7 @@ import { AvatarModule } from 'primeng/avatar';
 import { AvatarGroupModule } from 'primeng/avatargroup';
 import { OverlayPanelModule } from 'primeng/overlaypanel';
 import { Collaborator } from '../../shared/services/filesync/filesync.interface';
+import { injectStyleforComments } from '../../shared/utils/monaco.utils';
 import uniqolor from 'uniqolor';
 
 @Component({
@@ -34,6 +42,7 @@ import uniqolor from 'uniqolor';
     AvatarModule,
     AvatarGroupModule,
     OverlayPanelModule,
+    TreeTableModule,
   ],
   providers: [],
   templateUrl: './file.component.html',
@@ -45,7 +54,6 @@ export class FileComponent implements OnInit, OnDestroy {
   binding!: MonacoBinding;
   hasPerms: boolean = true;
   comment: string = '';
-  currentOffset: number = 0;
   visibleCreateComments: boolean = false;
   viewZones: any[] = [];  
   relPos: any;
@@ -62,8 +70,10 @@ export class FileComponent implements OnInit, OnDestroy {
     private fileSyncService: FileSyncService,
     private activatedRoute: ActivatedRoute,
     private messageService: MessageService,
+    private commentLikesService: CommentLikesService,
     private ngZone: NgZone,
     private fileService: FileService,
+    private commentService: CommentService,
     private judge0Service: Judge0Service,
   ) {}
 
@@ -106,11 +116,13 @@ export class FileComponent implements OnInit, OnDestroy {
   showCreateComments(ed: any) {
     this.visibleCreateComments = true;
     let pos = ed.getPosition();
-    this.currentOffset = ed.getModel().getOffsetAt(pos);
-    this.relPos =  this.fileSyncService.createRelativePosFromMonacoPos(ed, ed.getModel());
+    pos.column = ed.getModel().getLineMaxColumn(pos.lineNumber);
+    this.relPos = createRelativePosFromMonacoPos(ed, pos, this.fileSyncService.doc);
   }
 
   onEditorInit(editor: any) {
+    injectStyleforComments();
+
     this.binding = new MonacoBinding(
       this.fileSyncService.doc.getText('content'),
       editor.getModel(),
@@ -118,9 +130,11 @@ export class FileComponent implements OnInit, OnDestroy {
       this.fileSyncService.awareness,
     )
     this.loadComments(editor);
+
     this.binding.monacoModel.onDidChangeContent(() => {
       this.loadComments(editor);
-    })
+    });
+
     const commentArray = this.fileSyncService.doc.getArray('comments')
     commentArray.observe(() => {
       if (!this.firstUpdate) {
@@ -158,37 +172,35 @@ export class FileComponent implements OnInit, OnDestroy {
 
   loadComments(editor: any) {
     const comments = this.fileSyncService.doc.getArray('comments').toArray();
-
     // Remove all viewZones
     editor.changeViewZones((changeAccessor: any) => {
       for (let i = 0; i < this.viewZones.length; i++) {
         changeAccessor.removeZone(this.viewZones[i]);
       }
     });
-
+    
     // Remove all overlayWidgets
     for (let i = 0; i < this.overlays.length; i++) {
       editor.removeOverlayWidget(this.overlays[i]);
     }
-
     comments.forEach((comment: any) => {
-      // Making Monaco viewZones interactable: https://stackoverflow.com/questions/59081613/how-do-you-process-input-events-from-an-iviewzone-in-the-monaco-editor
       let overlayDomNode = this.createCommentElement(comment);
+      // Making Monaco viewZones interactable: https://stackoverflow.com/questions/59081613/how-do-you-process-input-events-from-an-iviewzone-in-the-monaco-editor
       let overlayWidget = {
         getId: () => comment.id,
         getDomNode: () => overlayDomNode,
         getPosition: () => null
       };
-
+    
       editor.addOverlayWidget(overlayWidget);
-      let absPos = this.fileSyncService.createMonacoPosFromRelativePos(editor, comment.relPos);
-
+      let absPos = createMonacoPosFromRelativePos(editor, comment.relPos, this.fileSyncService.doc);
+    
       let viewZoneId: number | null = null;
       editor.changeViewZones((changeAccessor: any) => {
         let domNode = document.createElement('div');
         viewZoneId = changeAccessor.addZone({
           afterLineNumber: absPos.lineNumber,
-          heightInLines: 4,
+          heightInLines: 5,
           domNode: domNode,
           onDomNodeTop: (top: string) => {
             overlayDomNode.style.top = top + 'px';
@@ -197,49 +209,60 @@ export class FileComponent implements OnInit, OnDestroy {
             overlayDomNode.style.height = height + 'px';
           }
         });
-        overlayDomNode.querySelector('#deleteButton')?.addEventListener('click', () => {
+        overlayDomNode.querySelector('#deleteButton' + comment.id)?.addEventListener('click', () => {
           editor.changeViewZones((changeAccessor: any) => {
             changeAccessor.removeZone(viewZoneId);
           });
           editor.removeOverlayWidget(overlayWidget);
           let index = this.fileSyncService.doc.getArray('comments').toArray().indexOf(comment);
           this.fileSyncService.doc.getArray('comments').delete(index, 1);
-
-          this.fileSyncService.deleteComment(comment.id, this.activatedRoute.snapshot.params['id']);
+  
+          this.commentService.deleteComment(comment.id, this.activatedRoute.snapshot.params['id']).subscribe({
+            next: () => {
+              this.messageService.add({ severity: 'success', summary: 'Success', detail: 'Comment deleted' });
+            },
+            error: (err) => {
+              this.messageService.add({ severity: 'error', summary: 'Error', detail: 'Could not delete comment' });
+            }
+          });
+        });
+  
+        overlayDomNode.querySelector('#likeButton' + comment.id)?.addEventListener('click', async () => {
+          this.commentLikesService.likeComment(comment.id, this.activatedRoute.snapshot.params['id']).subscribe({
+            error: (err) => {
+              this.messageService.add({ severity: 'warn', summary: 'Warning', detail: 'You already disliked this comment' });
+            }
+          });
+        });
+  
+        overlayDomNode.querySelector('#dislikeButton' + comment.id)?.addEventListener('click', () => {
+          this.commentLikesService.dislikeComment(comment.id, this.activatedRoute.snapshot.params['id']).subscribe({
+            error: (err) => {
+              this.messageService.add({ severity: 'warn', summary: 'Warning', detail: 'You already liked this comment' });
+            }
+          });
         });
         
         this.overlays.push(overlayWidget);
         this.viewZones.push(viewZoneId);
       });
+
+      this.commentLikesService.getCommentLikesAndDislikes(comment.id, this.activatedRoute.snapshot.params['id']).subscribe((res) => {
+        comment.likes = res.likes;
+        comment.dislikes = res.dislikes;
+      });
     });    
   }
-
-  getLine(offset: number | undefined, text: string) {
-    if (offset === undefined) {
-      offset=0;
-    }
-    let lines = text.split('\n');
-    let line = 0;
-    let currentOffset = 0;
-    while (currentOffset < offset) {
-
-      currentOffset += lines[line].length + 1;
-      line++;
-    }
-    return line;
-  }
-
+  
   addComment(content: string) {
-    let comment = {
-      content: content,
-      relPos: this.relPos,
-      fileId: this.activatedRoute.snapshot.params['id'],
-    }
+    const encodedRelPos = JSON.stringify(this.relPos);
 
-    this.fileSyncService.createComment(comment.content, comment.relPos, comment.fileId);
-    
-    this.comment = '';
-    this.visibleCreateComments = false;
+    this.commentService.createComment(content, encodedRelPos, this.activatedRoute.snapshot.params['id']).subscribe({
+      next: (res) => {
+        this.comment = '';
+        this.visibleCreateComments = false;
+      }
+    });
   }
 
   ngOnDestroy(): void {
@@ -247,29 +270,39 @@ export class FileComponent implements OnInit, OnDestroy {
   }
 
   createCommentElement(comment: any) {
-    /**
-     * This was the only way :(
-     * 
-     * Monaco View Zones require a DOM element to be passed in as the domNode property
-     */
-
     let commentElement = document.createElement('div');
 
     commentElement.innerHTML = `
-      <div style="color: black; width: 84vw; background-color: white; border: 1px solid black; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 5px; border-radius: 5px; z-index: 1000;">
-        <div id="buttonRow" style="display: flex; width: 100%; justify-content: space-between; margin-bottom: 5px; align-items: center">
-          <span style="font-weight: bold;">${comment.user.email}</span>
-          <button style="font-size: 20px; margin-top: 5px; background-color: red; color: white; border: none; border-radius: 5px; cursor: pointer;" id="deleteButton">&times;</button>
+      <div class="comment row">
+        <div class="col-11 user-content">
+          <span id="userEmail${comment.id}" class="comment-email"></span>
+          <div id="content${comment.id}" class="comment-content"></div>
         </div>
-        <div style="max-height: 50px; overflow-y: auto; width: 100%">${comment.content}</div>
+        <div class="col-1 button-col">
+          <div class="end">
+            <button id="deleteButton${comment.id}" class="delete button" id="deleteButton">&times;</button>
+          </div>
+          <div class="button-row">
+            <div>
+              <button id="likeButton${comment.id}" class="like button" id="likeButton">&#8679;</button>
+              <span id="likeCount${comment.id}" class="count">${comment.likes}</span>
+            </div>
+            <div>
+            <button id="dislikeButton${comment.id}" class="dislike button" id="dislikeButton">&#8681;</button>
+            <span id="dislikeCount${comment.id}" class="count">${comment.dislikes}</span>
+            </div>
+          </div>
+        </div>
       </div>
     `;
 
-    let userNameElement = document.createElement('span');
-    userNameElement.style.fontWeight = 'bold';
-    userNameElement.style.fontSize = '20px';
+    // Sanitize the username and content
+    const userNameElement = commentElement.querySelector(`#userEmail${comment.id}`);
+    userNameElement!.textContent = comment.user.email;
 
-
+    const contentElement = commentElement.querySelector(`#content${comment.id}`);
+    contentElement!.textContent = comment.content;
+     
     return commentElement;
   }
 

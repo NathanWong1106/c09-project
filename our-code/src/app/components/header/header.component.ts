@@ -7,6 +7,8 @@ import { TieredMenuModule } from 'primeng/tieredmenu';
 import { AuthService } from '../../shared/services/auth/auth.service';
 import { environment } from '../../../environments/environment';
 import { ButtonModule } from 'primeng/button';
+import { InputSwitchModule } from 'primeng/inputswitch';
+import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 
 @Component({
@@ -18,6 +20,8 @@ import { Router } from '@angular/router';
     AvatarGroupModule,
     TieredMenuModule,
     ButtonModule,
+    InputSwitchModule,
+    FormsModule,
   ],
   templateUrl: './header.component.html',
   styleUrl: './header.component.css',
@@ -30,6 +34,7 @@ export class HeaderComponent implements OnInit {
     },
   ];
 
+  isDarkMode: boolean = false;
   isAuth: boolean = false;
   client: any;
   profilePicture: string = '';
@@ -77,5 +82,17 @@ export class HeaderComponent implements OnInit {
     this.router.navigate(['/sign-in']).then(() =>{
       this.authService.logout().subscribe();
     });
+  }
+
+  // Toggle for themes: https://medium.com/@mathieu.schnoor/light-dark-theme-switcher-in-angular-with-primeng-dad1c1d4a067
+  toggleLightDarkMode() {
+    const linkRef = document.getElementById('app-theme') as HTMLLinkElement;
+    if (linkRef.href.includes('light')) {
+      linkRef.href = 'theme-dark.css';
+      this.isDarkMode = true;
+    } else {
+      linkRef.href = 'theme-light.css';
+      this.isDarkMode = false;
+    }
   }
 }
