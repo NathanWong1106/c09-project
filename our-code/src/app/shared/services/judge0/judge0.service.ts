@@ -16,9 +16,6 @@ export class Judge0Service {
   constructor(private http: HttpClient) {}
   
   submitCode(fileId: number, code: string, languageId: number, stdin: string) {
-    // Notify room of submission
-    this.socket.emit('submit-code', fileId);
-    
     return this.http.post(
       `${this.endpoint}/api/judge0/${fileId}/submit`,
       {

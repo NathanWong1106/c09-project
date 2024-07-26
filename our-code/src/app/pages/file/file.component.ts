@@ -146,8 +146,14 @@ export class FileComponent implements OnInit, OnDestroy {
 
   onSubmissionResult(result: any) {
     this.isRunning = false;
-    this.consoleOutput = "Input:" + result.stdin + "\nOutput:" + result.stdout + "\nError:" + result.stderr
-    + "\nExit Code:" + result.exit_code;
+    if (result.success) {
+      this.messageService.add({ severity: 'success', summary: 'Code Ran', detail: 'Code ran successfully' });
+      this.consoleOutput = "Input:\n" + result.stdin + "\n\nOutput:\n" + result.stdout + "\n\nError:" + result.stderr
+      + "\n\nExit Code: " + result.exit_code;
+    }
+    else {
+      this.messageService.add({ severity: 'error', summary: 'Code Failed', detail: 'Code failed to run' });
+    }
   }
 
   loadComments(editor: any) {

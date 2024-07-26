@@ -292,6 +292,7 @@ export class YjsFileSocket {
   public setSubmission(fileId: string, token: string): boolean {
     if (!this.fileSubmissions.has(fileId)) {
       this.fileSubmissions.set(fileId, token);
+      this.io.to(fileId).emit('submit-code');
       return true;
     }
     return false;
@@ -306,9 +307,9 @@ export class YjsFileSocket {
     return this.fileSubmissions.has(fileId);
   }
 
-  public broadcastSubmission(fileId: string, token: string, stdin: string, stdout: string, stderr: string, exit_code: number): void {
+  public broadcastSubmission(fileId: string, token: string, stdin: string, stdout: string, stderr: string, exit_code: number, success: boolean): void {
     if (this.fileSubmissions.get(fileId) === token) {
-      this.io.to(fileId).emit("submission-result", stdin, stdout, stderr, exit_code);
+      this.io.to(fileId).emit("submission-result", { stdin: stdin, stdout: stdout, stderr: stderr, exit_code: exit_code, success: success });
       this.fileSubmissions.delete(fileId);
     }
   }
